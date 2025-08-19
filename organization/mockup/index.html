@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomEAL - Food & Recipe Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="app-header">
+            <span class="page-title" id="page-title">Menu Calendar</span>
+            <span class="app-name">HomEAL</span>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Calendar Page -->
+            <div id="calendar-page" class="page active">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button id="prev-week"><i class="fas fa-chevron-left"></i></button>
+                        <div class="week-info">
+                            <span id="current-week">Week of December 16-22, 2024</span>
+                        </div>
+                        <button id="next-week"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-container">
+                    <div class="vertical-week-view">
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Monday</span>
+                                <span class="day-date">Dec 16</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-item">
+                                        <span class="meal-name">Caesar Salad</span>
+                                        <button class="meal-actions"><i class="fas fa-ellipsis-v"></i></button>
+                                    </div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-item">
+                                        <span class="meal-name">Pasta Carbonara</span>
+                                        <button class="meal-actions"><i class="fas fa-ellipsis-v"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Tuesday</span>
+                                <span class="day-date">Dec 17</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-item">
+                                        <span class="meal-name">Grilled Chicken</span>
+                                        <button class="meal-actions"><i class="fas fa-ellipsis-v"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Wednesday</span>
+                                <span class="day-date">Dec 18</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Thursday</span>
+                                <span class="day-date">Dec 19</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Friday</span>
+                                <span class="day-date">Dec 20</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-item">
+                                        <span class="meal-name">Pizza Night</span>
+                                        <button class="meal-actions"><i class="fas fa-ellipsis-v"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Saturday</span>
+                                <span class="day-date">Dec 21</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="day-card">
+                            <div class="day-header">
+                                <span class="day-name">Sunday</span>
+                                <span class="day-date">Dec 22</span>
+                            </div>
+                            <div class="meals-container">
+                                <div class="meal-slot">
+                                    <div class="meal-time">Breakfast</div>
+                                    <div class="meal-placeholder">+ Add meal</div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Lunch</div>
+                                    <div class="meal-item">
+                                        <span class="meal-name">Sunday Brunch</span>
+                                        <button class="meal-actions"><i class="fas fa-ellipsis-v"></i></button>
+                                    </div>
+                                </div>
+                                <div class="meal-slot">
+                                    <div class="meal-time">Dinner</div>
+                                    <div class="meal-item">
+                                        <span class="meal-name">Pancakes</span>
+                                        <button class="meal-actions"><i class="fas fa-ellipsis-v"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fridge Page -->
+            <div id="fridge-page" class="page">
+                <div class="fridge-categories">
+                    <div class="category-tabs">
+                        <button class="category-tab active" data-category="all">All</button>
+                        <button class="category-tab" data-category="vegetables">Vegetables</button>
+                        <button class="category-tab" data-category="dairy">Dairy</button>
+                        <button class="category-tab" data-category="meat">Meat</button>
+                    </div>
+                </div>
+                <div class="items-list" id="fridge-items">
+                    <div class="item-card" data-category="vegetables">
+                        <div class="item-info">
+                            <h3>Tomatoes</h3>
+                            <p>Expires: Dec 20, 2024</p>
+                            <span class="quantity">3 pieces</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="item-card" data-category="dairy">
+                        <div class="item-info">
+                            <h3>Milk</h3>
+                            <p>Expires: Dec 18, 2024</p>
+                            <span class="quantity">1 liter</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="item-card" data-category="meat">
+                        <div class="item-info">
+                            <h3>Chicken Breast</h3>
+                            <p>Expires: Dec 19, 2024</p>
+                            <span class="quantity">500g</span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Shopping List Page -->
+            <div id="shopping-page" class="page">
+                <div class="shopping-list" id="shopping-items">
+                    <div class="shopping-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="item1">
+                            <label for="item1"></label>
+                        </div>
+                        <div class="item-details">
+                            <span class="item-name">Bread</span>
+                            <span class="item-quantity">2 loaves</span>
+                        </div>
+                        <button class="btn-remove"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="shopping-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="item2">
+                            <label for="item2"></label>
+                        </div>
+                        <div class="item-details">
+                            <span class="item-name">Eggs</span>
+                            <span class="item-quantity">1 dozen</span>
+                        </div>
+                        <button class="btn-remove"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="shopping-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="item3" checked>
+                            <label for="item3"></label>
+                        </div>
+                        <div class="item-details">
+                            <span class="item-name">Apples</span>
+                            <span class="item-quantity">1 kg</span>
+                        </div>
+                        <button class="btn-remove"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="shopping-item">
+                        <div class="item-checkbox">
+                            <input type="checkbox" id="item4">
+                            <label for="item4"></label>
+                        </div>
+                        <div class="item-details">
+                            <span class="item-name">Olive Oil</span>
+                            <span class="item-quantity">1 bottle</span>
+                        </div>
+                        <button class="btn-remove"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings-page" class="page">
+                <div class="settings-list">
+                    <div class="settings-section">
+                        <h3>Notifications</h3>
+                        <div class="setting-item">
+                            <span>Expiry Alerts</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Shopping Reminders</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Menu Planning Alerts</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Appearance</h3>
+                        <div class="setting-item">
+                            <span>Dark Mode</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dark-mode-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Theme Color</span>
+                            <select class="theme-selector">
+                                <option value="green">Green</option>
+                                <option value="blue">Blue</option>
+                                <option value="orange">Orange</option>
+                                <option value="purple">Purple</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Data Management</h3>
+                        <div class="setting-item">
+                            <span>Export Data</span>
+                            <button class="btn-secondary">Export</button>
+                        </div>
+                        <div class="setting-item">
+                            <span>Clear All Data</span>
+                            <button class="btn-danger">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>About</h3>
+                        <div class="setting-item">
+                            <span>Version</span>
+                            <span class="version-info">1.0.0</span>
+                        </div>
+                        <div class="setting-item">
+                            <span>Help & Support</span>
+                            <button class="btn-secondary">Contact</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-page="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Calendar</span>
+            </button>
+            <button class="nav-item" data-page="fridge">
+                <i class="fas fa-archive"></i>
+                <span>Fridge</span>
+            </button>
+            <button class="nav-item" data-page="shopping">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Shopping</span>
+            </button>
+            <button class="nav-item" data-page="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

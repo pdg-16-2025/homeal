@@ -1,0 +1,22 @@
+{
+  "name": "homeal-mockup",
+  "version": "1.0.0",
+  "description": "Mobile food and recipe management app mockup",
+  "main": "index.html",
+  "scripts": {
+    "start": "open index.html",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "food",
+    "recipe",
+    "mobile",
+    "mockup",
+    "frontend"
+  ],
+  "author": "Developer",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
+
