@@ -13,6 +13,7 @@ fridge and pantry.
 	- Expiration dates for products
 		- Input manually
 	- Once meal is finished, you can add the number of servings leftover
+    - Could add manually product in fridge
 	
 - Recipes
 	- Search for recipes
@@ -21,15 +22,19 @@ fridge and pantry.
 	- Add custom recipes
 	- Import / export recipes
 	- While cooking, you have timers to help you
+	- Base recipe each season for everyone (vegan + meat + fish + vege + etc)
 
 - Recommendations
 	- Recommend recipes based on ingredients in fridge / pantry
 	- Recommend recipes based on expiration dates
+	- Recommend recipes based on user similarity preference
+	- Recommend recipes based on nutrition needs
 	
 - Shopping list
 	- Plan days on which to grocery shop
 	- Generate shopping list based on planned recipes
 	- While shopping, you have a list which changes when you scan products
+	- Could add manually some product
 
 - Settings
 	- Default number of servings
@@ -40,7 +45,6 @@ fridge and pantry.
 
 - Extras if time allows
     - Scan recipes with OCR to input products
-    - Recommend recipes based on user and their nutrition needs
     - Scanning while shopping and generating a barcode list which can be used to
     scan products at the self-checkout
 
