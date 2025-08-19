@@ -1,0 +1,40 @@
+{
+  "name": "homeal-landing-page",
+  "version": "1.0.0",
+  "description": "Landing page for Homeal - Smart meal planning Android app",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx live-server . --port=3000 --open",
+    "dev": "npx live-server . --port=3000 --open --watch",
+    "build": "echo 'Building static files...' && mkdir -p dist && cp -r . dist/ && echo 'Build complete!'",
+    "serve": "npx http-server . -p 3000 -o",
+    "preview": "npx live-server . --port=8080 --open"
+  },
+  "keywords": [
+    "homeal",
+    "meal-planning",
+    "android-app",
+    "landing-page",
+    "food",
+    "recipes"
+  ],
+  "author": "Homeal Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BasileBux/homeal.git"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
