@@ -21,7 +21,7 @@ Help users reduce food waste and decision fatigue by connecting their current fr
 - Recipe suggestions
 - Settings (servings, dietary, banned ingredients)
 
-## Detailed Feature Breakdown
+## Functional Requirements
 
 ### Ingredients / Products
 - Add and remove custom ingredients (products)
@@ -66,6 +66,54 @@ Help users reduce food waste and decision fatigue by connecting their current fr
 ### Extras if Time Allows
 - Scan recipes with OCR to extract products
 - Generate a barcode list while shopping that can be used at self-checkout
+
+## Non-Functional Requirements
+
+### Performance
+- **Offline-first mode**: The application must be fully functional without Internet connection
+- Response time < 2 seconds for common operations
+- Optimized local database (SQLite)
+
+### Compatibility
+- **Platform**: Android API 21+ (Android 5.0+)
+- **Language**: Kotlin
+- **Interface**: Jetpack Compose
+
+### Security
+- Secure local storage of user data
+- Minimal required permissions (Camera for scanning, Storage for data)
+
+### Maintainability
+- Clear MVC architecture
+- Documented and tested code
+- Separation of concerns
+
+### Usability
+- Intuitive and modern interface
+- Support for different Android screen sizes
+- Basic accessibility compliance
+
+### Scalability
+- Extensible database structure
+- Architecture prepared for future feature additions
+- Possibility of evolution towards online mode (optional)
+
+## Constraints
+
+- **Budget**: Student project, limited resources
+- **Time**: Development within a semester timeframe
+- **Team**: Small team with 1-week sprint cycles
+- **Technology**: Android native stack only
+- **Data**: Use of static OpenFoodFacts data, no real-time external APIs
+
+## Success Criteria
+
+1. Functional application in offline mode
+2. Intuitive and responsive user interface
+3. Complete cycle management: ingredient addition → planning → shopping
+4. Measurable reduction in food waste (via user feedback)
+5. Quality code with basic unit tests
+6. Complete technical documentation
 
 ## User Stories (Sample)
 | As a | I want to | So that |
