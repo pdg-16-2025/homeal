@@ -1,7 +1,8 @@
-package main
+package cli
 
 import (
 	"testing"
+	globals "github.com/BasileBux/homeal/build-src/globals"
 )
 
 func TestParseArgs(t *testing.T) {
@@ -13,8 +14,13 @@ func TestParseArgs(t *testing.T) {
 		{[]string{"release", "proud"}, ""},
 		{[]string{"release", "major"}, ""},
 		{[]string{"release", "minor"}, ""},
-		{[]string{"release"}, "Invalid program argument(s)\nUsage: build release-type [version-type]\nrelease-type: build, release\nversion-type: proud, major, minor\n"},
-		{[]string{"help"}, "Invalid program argument(s)\nUsage: build release-type [version-type]\nrelease-type: build, release\nversion-type: proud, major, minor\n"},
+		{[]string{"release"}, globals.USAGE_STR},
+		{[]string{"help"}, globals.USAGE_STR},
+		{[]string{"unknown"}, globals.USAGE_STR},
+		{[]string{}, globals.USAGE_STR},
+		{[]string{"release", "unknown"}, globals.USAGE_STR},
+		{[]string{"debug", "extra"}, globals.USAGE_STR},
+		{[]string{"release", "proud", "extra"}, globals.USAGE_STR},
 	}
 
 	for _, test := range tests {
