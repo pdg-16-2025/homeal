@@ -40,11 +40,28 @@ jobs:
     - name: Update version in build.gradle.kts
       working-directory: ./android
       run: |
+        echo "Updating version to: ${{ steps.get_version.outputs.VERSION }}"
+        
+        # Update version name
         sed -i "s/versionName = \".*\"/versionName = \"${{ steps.get_version.outputs.VERSION }}\"/" app/build.gradle.kts
         
-        # Extract version code from version (e.g., 1.2.3 -> 10203)
-        VERSION_CODE=$(echo "${{ steps.get_version.outputs.VERSION }}" | awk -F. '{printf "%d%02d%02d", $1, $2, $3}')
+        # Extract version code from version (e.g., 0.0.1 -> 1, 1.2.3 -> 10203)
+        VERSION_CODE=$(echo "${{ steps.get_version.outputs.VERSION }}" | awk -F. '{
+          major = $1; minor = $2; patch = $3;
+          # Ensure we get a valid positive integer
+          code = major * 10000 + minor * 100 + patch;
+          if (code == 0) code = 1;
+          printf "%d", code
+        }')
+        
+        echo "Generated version code: $VERSION_CODE"
+        
+        # Update version code
         sed -i "s/versionCode = .*/versionCode = $VERSION_CODE/" app/build.gradle.kts
+        
+        # Show the updated lines for verification
+        echo "Updated build.gradle.kts version info:"
+        grep -A 2 -B 2 "versionCode\|versionName" app/build.gradle.kts
 
     - name: Run tests
       working-directory: ./android
