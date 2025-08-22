@@ -1,5 +1,7 @@
 package globals
 
+import _ "embed"
+
 const PRODUCT_DB_URL = "https://huggingface.co/datasets/openfoodfacts/product-database/resolve/main/food.parquet?download=true"
 const PRODUCT_DB_FILE = "food.parquet"
 
@@ -7,6 +9,10 @@ const RECIPES_DB_URL = "https://www.kaggle.com/api/v1/datasets/download/irkaal/f
 const RECIPES_DB_ZIP_FILE = "recipes.zip"
 const RECIPES_DB_FILES = "recipes"
 const REVIEWS_DB_FILES = "reviews"
+
+//go:embed db_schema.sql
+var DB_SCHEMA string 
+const DB_OUTPUT_FILE = "db.sqlite"
 
 const USAGE_STR = "Invalid program argument(s)\n" +
 	"Usage: build release-type [version-type]\n" +

@@ -16,5 +16,8 @@ func main() {
 	// 	return
 	// }
 
-	extractor.ProductsExtract()
+	err := extractor.CreateDB()
+	if err != nil {
+		panic(err)
+	}
 }

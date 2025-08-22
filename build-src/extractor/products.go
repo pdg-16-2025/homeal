@@ -10,35 +10,34 @@ import (
 	"github.com/xitongsys/parquet-go/reader"
 )
 
-// We cannot read the whole file at once, so we read it in chunks. 100,000 rows
-// is aproximately 11GB ram at peak usage, which works on 16GB RAM machines. However,
-// if your machine has less RAM, you need to reduce this value. The higher the value,
-// the faster the extraction, but also the more RAM used.
-const PASS_SIZE = 100000
+type Product struct {
+	name          string
+	code          string
+	ingredient_id int
+}
 
-func ProductsExtract() error {
+func ProductsExtract(passSize int) ([]Product, error) {
+
 	fr, err := local.NewLocalFileReader(globals.PRODUCT_DB_FILE)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer fr.Close()
 
 	pr, err := reader.NewParquetReader(fr, nil, 4)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer pr.ReadStop()
 
-	fmt.Printf("Number of rows: %d\n", pr.GetNumRows())
+	rowNumber := int(pr.GetNumRows())
 
-	// rowNumber := int(pr.GetNumRows())
-	// BUG: FOR DEBUGGING PURPOSES ONLY
-	rowNumber := 500000
+	products := make([]Product, 300000)
 
-	for n := range rowNumber/PASS_SIZE + 1 {
-		records, err := pr.ReadByNumber(PASS_SIZE)
+	for n := range rowNumber/passSize + 1 {
+		records, err := pr.ReadByNumber(passSize)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		for i, record := range records {
@@ -50,10 +49,11 @@ func ProductsExtract() error {
 				t = t.Elem()
 			}
 
+			product := Product{}
+
 			if v.Kind() == reflect.Struct {
 				var countriesTags any
 				var productName any
-				var foundCountriesTags, foundProductName bool
 
 				for j := 0; j < v.NumField(); j++ {
 					field := v.Field(j)
@@ -123,53 +123,80 @@ func ProductsExtract() error {
 
 					if fieldName == "Countries_tags" || fieldName == "countries_tags" {
 						countriesTags = value
-						foundCountriesTags = true
 					} else if fieldName == "Product_name" || fieldName == "product_name" {
 						productName = value
-						foundProductName = true
+					} else if fieldName == "Code" || fieldName == "code" {
+						product.code = fmt.Sprintf("%v", value)
 					}
 				}
 
 				// Check if countries_tags contains "en:switzerland"
-				if foundCountriesTags {
-					containsSwitzerland := false
+				containsSwitzerland := false
 
-					switch ct := countriesTags.(type) {
-					case string:
-						containsSwitzerland = strings.Contains(ct, "en:switzerland")
-					case []string:
-						for _, tag := range ct {
-							if strings.Contains(tag, "en:switzerland") {
-								containsSwitzerland = true
-								break
-							}
+				switch ct := countriesTags.(type) {
+				case string:
+					containsSwitzerland = strings.Contains(ct, "en:switzerland")
+				case []string:
+					for _, tag := range ct {
+						if strings.Contains(tag, "en:switzerland") {
+							containsSwitzerland = true
+							break
 						}
-					case []any:
-						for _, tag := range ct {
-							if str, ok := tag.(string); ok && strings.Contains(str, "en:switzerland") {
-								containsSwitzerland = true
-								break
-							}
-						}
-					default:
-						strValue := fmt.Sprintf("%v", ct)
-						containsSwitzerland = strings.Contains(strValue, "en:switzerland")
 					}
+				case []any:
+					for _, tag := range ct {
+						if str, ok := tag.(string); ok && strings.Contains(str, "en:switzerland") {
+							containsSwitzerland = true
+							break
+						}
+					}
+				default:
+					strValue := fmt.Sprintf("%v", ct)
+					containsSwitzerland = strings.Contains(strValue, "en:switzerland")
+				}
 
-					if containsSwitzerland {
-						fmt.Printf("Row %d:\n", i+n*PASS_SIZE)
-						fmt.Printf("  countries_tags: %v\n", countriesTags)
-						if foundProductName {
-							fmt.Printf("  product_name: %v\n", productName)
-						}
-						fmt.Println()
-					}
+				if containsSwitzerland {
+					product.name = getProductName(productName)
+					product.ingredient_id = 0 // Placeholder, to be updated later
+					fmt.Printf("Row %d:\n", i+n*passSize)
+					fmt.Printf("  countries_tags: %v\n", countriesTags)
+					fmt.Printf("  product_name: %v\n", product.name)
+					fmt.Printf("  code: %s\n", product.code)
+					fmt.Println()
+					products = append(products, product)
 				}
 			}
 		}
 	}
 
-	return nil
+	return products, nil
+}
+
+func getProductName(nameBlock any) string {
+	if nameBlock == nil {
+		return ""
+	}
+	switch v := nameBlock.(type) {
+	case string:
+		return v
+	case []string:
+		ret := ""
+		for _, str := range v {
+			if ret != "" {
+				ret += " "
+			}
+			ret += str
+		}
+		return ret
+
+	case []any:
+		if len(v) > 0 {
+			if str, ok := v[0].(string); ok {
+				return str
+			}
+		}
+	}
+	return ""
 }
 
 // Helper function to extract string values from struct fields
