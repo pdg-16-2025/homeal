@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'  # Trigger on version tags like v1.0.0, v1.1.0, etc.
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   release:
     name: Create Release
@@ -78,50 +82,47 @@ jobs:
     - name: Get APK file names
       id: apk_names
       run: |
-        echo "RELEASE_APK=$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)" >> $GITHUB_OUTPUT
-        echo "DEBUG_APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -1)" >> $GITHUB_OUTPUT
+        echo "Finding APK files..."
+        find android/app/build/outputs/apk -name '*.apk' -type f
+        
+        RELEASE_APK=$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)
+        DEBUG_APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -1)
+        
+        echo "Release APK: $RELEASE_APK"
+        echo "Debug APK: $DEBUG_APK"
+        
+        echo "RELEASE_APK=$RELEASE_APK" >> $GITHUB_OUTPUT
+        echo "DEBUG_APK=$DEBUG_APK" >> $GITHUB_OUTPUT
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
+    - name: Create Release with GitHub CLI
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Homeal v${{ steps.get_version.outputs.VERSION }}
-        draft: false
-        prerelease: false
-        body: |
-          ## Homeal Android App v${{ steps.get_version.outputs.VERSION }}
-          
-          ### Changes
-          - Please update this section with your release notes
-          
-          ### Downloads
-          - **Release APK**: Ready for production use
-          - **Debug APK**: For testing and debugging
-          
-          ### Installation
-          1. Download the appropriate APK file
-          2. Enable "Install from unknown sources" in your Android settings
-          3. Install the APK file
-
-    - name: Upload Release APK
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.apk_names.outputs.RELEASE_APK }}
-        asset_name: homeal-v${{ steps.get_version.outputs.VERSION }}-release.apk
-        asset_content_type: application/vnd.android.package-archive
-
-    - name: Upload Debug APK
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.apk_names.outputs.DEBUG_APK }}
-        asset_name: homeal-v${{ steps.get_version.outputs.VERSION }}-debug.apk
-        asset_content_type: application/vnd.android.package-archive
+      run: |
+        # Create release notes
+        cat << EOF > release_notes.md
+        ## Homeal Android App v${{ steps.get_version.outputs.VERSION }}
+        
+        ### Changes
+        - Please update this section with your release notes
+        
+        ### Downloads
+        - **Release APK**: Ready for production use
+        - **Debug APK**: For testing and debugging
+        
+        ### Installation
+        1. Download the appropriate APK file
+        2. Enable "Install from unknown sources" in your Android settings
+        3. Install the APK file
+        
+        ### Build Information
+        - Version Code: $(grep "versionCode" android/app/build.gradle.kts | awk '{print $3}')
+        - Built from commit: ${{ github.sha }}
+        - Build date: $(date)
+        EOF
+        
+        # Create release and upload assets
+        gh release create v${{ steps.get_version.outputs.VERSION }} \
+          --title "Homeal v${{ steps.get_version.outputs.VERSION }}" \
+          --notes-file release_notes.md \
+          "${{ steps.apk_names.outputs.RELEASE_APK }}#homeal-v${{ steps.get_version.outputs.VERSION }}-release.apk" \
+          "${{ steps.apk_names.outputs.DEBUG_APK }}#homeal-v${{ steps.get_version.outputs.VERSION }}-debug.apk"
