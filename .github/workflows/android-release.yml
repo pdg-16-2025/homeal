@@ -1,0 +1,110 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0, v1.1.0, etc.
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./android/gradlew
+
+    - name: Extract version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Update version in build.gradle.kts
+      working-directory: ./android
+      run: |
+        sed -i "s/versionName = \".*\"/versionName = \"${{ steps.get_version.outputs.VERSION }}\"/" app/build.gradle.kts
+        
+        # Extract version code from version (e.g., 1.2.3 -> 10203)
+        VERSION_CODE=$(echo "${{ steps.get_version.outputs.VERSION }}" | awk -F. '{printf "%d%02d%02d", $1, $2, $3}')
+        sed -i "s/versionCode = .*/versionCode = $VERSION_CODE/" app/build.gradle.kts
+
+    - name: Run tests
+      working-directory: ./android
+      run: ./gradlew test
+
+    - name: Build release APK
+      working-directory: ./android
+      run: ./gradlew assembleRelease
+
+    - name: Build debug APK
+      working-directory: ./android
+      run: ./gradlew assembleDebug
+
+    - name: Get APK file names
+      id: apk_names
+      run: |
+        echo "RELEASE_APK=$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)" >> $GITHUB_OUTPUT
+        echo "DEBUG_APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -1)" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Homeal v${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        body: |
+          ## Homeal Android App v${{ steps.get_version.outputs.VERSION }}
+          
+          ### Changes
+          - Please update this section with your release notes
+          
+          ### Downloads
+          - **Release APK**: Ready for production use
+          - **Debug APK**: For testing and debugging
+          
+          ### Installation
+          1. Download the appropriate APK file
+          2. Enable "Install from unknown sources" in your Android settings
+          3. Install the APK file
+
+    - name: Upload Release APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.apk_names.outputs.RELEASE_APK }}
+        asset_name: homeal-v${{ steps.get_version.outputs.VERSION }}-release.apk
+        asset_content_type: application/vnd.android.package-archive
+
+    - name: Upload Debug APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.apk_names.outputs.DEBUG_APK }}
+        asset_name: homeal-v${{ steps.get_version.outputs.VERSION }}-debug.apk
+        asset_content_type: application/vnd.android.package-archive
