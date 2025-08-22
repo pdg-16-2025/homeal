@@ -147,3 +147,5 @@ Test Data: small curated OpenFoodFacts subset (≤ 200 rows).
 - Defer hi-res images (optional future network module).
 
 ---
+
+---

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Android Studio / IntelliJ IDEA
 *.iml
 .gradle/
@@ -77,3 +78,7 @@ out/
 # Fichiers de configuration locale
 config.local.json
 .env.local
+=======
+*.parquet
+*.csv
+>>>>>>> origin/main
