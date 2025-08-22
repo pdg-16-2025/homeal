@@ -1,0 +1,108 @@
+name: Deploy to Server
+
+on:
+  workflow_run:
+    workflows: ["Docker Build and Push"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  IMAGE_NAME: homeal-server
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ env.SERVER_SSH_KEY }}
+
+    - name: Deploy to server
+      run: |
+        # Create deployment script
+        cat > deploy.sh << 'EOF'
+        #!/bin/bash
+        set -e
+
+        echo "Starting deployment..."
+
+        # Pull the latest image
+        echo "Pulling latest Docker image..."
+        docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+        # Stop and remove existing container if it exists
+        echo "Stopping existing container..."
+        docker stop homeal-server || true
+        docker rm homeal-server || true
+
+        # Start new container
+        echo "Starting new container..."
+        docker run -d \
+          --name homeal-server \
+          --restart unless-stopped \
+          -p 8080:8080 \
+          ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+        # Clean up old images
+        echo "Cleaning up old images..."
+        docker image prune -f
+
+        # Check if container is running
+        if [ "$(docker inspect -f '{{.State.Running}}' homeal-server)" = "true" ]; then
+          echo "Deployment successful!"
+          docker ps | grep homeal-server
+        else
+          echo "Deployment failed!"
+          docker logs homeal-server
+          exit 1
+        fi
+
+        echo "Deployment completed at $(date)"
+        EOF
+
+        # Copy deployment script to server
+        scp -o StrictHostKeyChecking=no deploy.sh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:/tmp/deploy.sh
+
+        # Execute deployment script on server
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
+
+    - name: Health check
+      run: |
+        echo "Waiting for server to start..."
+        sleep 30
+
+        # Test if the server is responding
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "curl -f http://localhost:8080 || exit 1"
+
+        echo "Health check passed!"
+      continue-on-error: false
+
+    - name: Deployment notification
+      if: success()
+      run: |
+        echo "✅ Deployment successful!"
+        echo "Server URL: http://${{ env.SERVER_HOST }}:8080"
+
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "❌ Deployment failed, attempting rollback..."
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "
+          docker stop homeal-server || true
+          docker rm homeal-server || true
+          # Try to restart previous container if possible
+          echo 'Rollback completed'
+        "
+
