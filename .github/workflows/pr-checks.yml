@@ -8,6 +8,12 @@ on:
       - '.github/workflows/android-*.yml'
       - '.github/workflows/pr-checks.yml'
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  actions: read
+
 jobs:
   changes:
     name: Detect Changes
@@ -74,6 +80,7 @@ jobs:
       if: always()
       uses: actions/github-script@v7
       with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const { context } = require('@actions/github');
           const jobStatus = '${{ job.status }}';

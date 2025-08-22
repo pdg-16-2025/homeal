@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  actions: read
+
 jobs:
   test:
     name: Run Unit Tests
@@ -40,11 +46,20 @@ jobs:
 
     - name: Generate test report
       uses: dorny/test-reporter@v1
-      if: success() || failure()
+      if: always()
+      continue-on-error: true
       with:
         name: Unit Test Results
         path: android/app/build/test-results/test*/TEST-*.xml
         reporter: java-junit
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload test results (fallback)
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: android/app/build/test-results/
 
   build:
     name: Build APK
