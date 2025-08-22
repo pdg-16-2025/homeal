@@ -1,3 +1,79 @@
-*.parquet
-*.csv
-RECOMMENDATION.md
+# Android Studio / IntelliJ IDEA
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android Gradle
+*/build/
+app/build/
+gradle-app.setting
+
+# Node.js / npm (pour landingPage et mockup)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.npm
+.yarn-integrity
+
+# Logs et temporaires
+*.log
+*.tmp
+.cache/
+.temp/
+
+# Environnement Python (si utilisé pour les scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+
+# Fichiers système
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup et swap files
+*~
+*.swp
+*.swo
+.#*
+
+# Données sensibles
+secrets.properties
+keystore.properties
+*.keystore
+*.jks
+
+# Archives et builds
+*.tar.gz
+*.zip
+*.rar
+dist/
+out/
+
+# Base de données de développement
+*.db
+*.sqlite
+*.sqlite3
+
+# Fichiers de configuration locale
+config.local.json
+.env.local

@@ -85,7 +85,7 @@ It does not rely on any external server: all data is stored and accessed locally
 | `recipes_global` | Preloaded base recipes | `id` (INT PK), `title` (TEXT), `instructions` (TEXT), `time_minutes` (INT), `difficulty` (INT), `json_ingredients` (TEXT) | Shipped read‑only; JSON list initially |
 | `recipes_user` | User created recipes | `id` (INT PK), `title`, `instructions`, `created_at` (INT), `json_ingredients` | Editable |
 | `recipes_saved` | Favorites / bookmarks | `user_recipe_id` (INT FK), `saved_at` (INT) | Composite PK (`user_recipe_id`) |
-| `Products` | Static product reference | `barcode` (TEXT PK), `product_name` (TEXT), `brands` (TEXT), `categories` (TEXT), `nutri_score` (TEXT), `quantity` (TEXT), `image_url` (TEXT) | Filtered subset |
+| `products` | Static product reference | `barcode` (TEXT PK), `product_name` (TEXT), `brands` (TEXT), `categories` (TEXT), `nutri_score` (TEXT), `quantity` (TEXT), `image_url` (TEXT) | Filtered subset |
 | `fridge_ingredients` | Current stock items | `id` (INT PK), `name` (TEXT), `quantity_value` (REAL), `quantity_unit` (TEXT), `expires_at` (INT nullable), `added_at` (INT) | Index on `expires_at` |
 | `shopping_list` | Planned purchase items | `id` (INT PK), `name` (TEXT), `expected_qty_value` (REAL), `expected_qty_unit` (TEXT), `added_at` (INT), `resolved` (INT BOOL) | Index on `resolved` |
 | `scan_events` (optional) | Audit of scans | `id` (INT PK), `barcode` (TEXT), `action` (TEXT), `ts` (INT) | Debug / metrics |
@@ -94,13 +94,13 @@ It does not rely on any external server: all data is stored and accessed locally
 
 ### Initial Indices
 - `fridge_ingredients(expires_at)`
-- `openfoodfacts(barcode)`
+- `products(barcode)`
 - `shopping_list(resolved)`
-
+---
 ## 9. Core Data Flows
 
 ### 9.1 Scan Product → Add to Fridge
-1. Scan barcode → lookup in `openfoodfacts`.
+1. Scan barcode → lookup in `Products`.
 2. Found: prefill & insert fridge row.
 3. Not found: manual entry dialog.
 4. Refresh fridge list.
@@ -120,7 +120,7 @@ It does not rely on any external server: all data is stored and accessed locally
 1. Query near-expiring items.
 2. Match recipes containing them.
 3. Rank by count of expiring ingredients used.
-
+---
 ## 10. Controller Responsibilities (Draft)
 | Controller | Scope | Key Operations |
 |------------|-------|----------------|
@@ -130,7 +130,7 @@ It does not rely on any external server: all data is stored and accessed locally
 | ShoppingController | Shopping lifecycle | generateFromPlan(), listActive(), toggleResolved(), clearResolved() |
 | CalendarController | Meal plan | assignRecipe(mealSlot, recipeId), unassign(), listDay() |
 | SettingsController | Preferences | loadSettings(), updateSetting(key,val) |
-
+---
 ## 11. Testing Strategy (Initial)
 | Test Type | Scope | Example |
 |-----------|-------|---------|
@@ -140,22 +140,10 @@ It does not rely on any external server: all data is stored and accessed locally
 | Property (future) | Aggregation | Ingredient sum stable |
 
 Test Data: small curated OpenFoodFacts subset (≤ 200 rows).
-
+---
 ## 12. Performance & Size Considerations
 - Trim OpenFoodFacts columns.
 - Compress preloaded DB asset.
 - Defer hi-res images (optional future network module).
-
-## 13. Future Evolution
-- Optional remote sync layer.
-- Normalize ingredients (recipe_ingredients table).
-- Nutrition analysis & goals.
-- Room ORM adoption (if starting raw).
-- Improved recommendation scoring.
-
-## 14. Open Questions
-- Min SDK final (21 vs 24 vs 26).
-- Migration tooling (Room auto vs manual).
-- Units normalization strategy.
 
 ---
