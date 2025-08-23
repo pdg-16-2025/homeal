@@ -69,6 +69,8 @@ keystore.properties
 dist/
 out/
 
+android/.idea/
+
 # Base de données de développement
 *.db
 *.sqlite
