@@ -25,6 +25,7 @@
               pkgsStable.android-tools # adb, fastboot
               pkgsStable.gradle
               pkgsStable.git
+              pkgsStable.go
             ];
 
             shellHook = ''
