@@ -52,7 +52,7 @@ jobs:
         docker run -d \
           --name homeal-server \
           --restart unless-stopped \
-          -p 8080:8080 \
+          -p 3000:3000 \
           ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
 
         # Clean up old images
