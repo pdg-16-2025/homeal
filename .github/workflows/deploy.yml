@@ -53,6 +53,7 @@ jobs:
           --name homeal-server \
           --restart unless-stopped \
           -p 3000:3000 \
+          -p 80:80 \
           ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
 
         # Clean up old images
