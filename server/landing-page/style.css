@@ -209,9 +209,13 @@ p {
     margin: 0 auto;
     padding: 0 20px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    justify-items: center;
     align-items: center;
+    text-align: center;
+}
+
+.hero-content {
+    text-align: center;
 }
 
 .hero-content h1 {
@@ -229,6 +233,7 @@ p {
     gap: 1rem;
     margin-bottom: 3rem;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 /* Mockup Placeholder */
@@ -605,7 +610,7 @@ p {
     }
     
     .hero-container {
-        grid-template-columns: 1fr;
+        justify-items: center;
         text-align: center;
         gap: 2rem;
     }
