@@ -10,5 +10,5 @@ sudo systemctl enable docker
 sudo usermod -aG docker $USER
 logout
 
-docker pull vasilba/homeal:latest
-docker run -d -p 8080:8080 vasilba/homeal:latest
+docker pull vasilba/homeal-server:latest
+docker run -d -p 80:80 -p 3000:3000 vasilba/homeal-server:latest
