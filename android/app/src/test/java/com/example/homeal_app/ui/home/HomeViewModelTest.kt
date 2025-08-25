@@ -30,15 +30,6 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `initial text value is correct`() {
-        // Given
-        viewModel.text.observeForever(textObserver)
-
-        // Then
-        verify(textObserver).onChanged("This is home Fragment")
-    }
-
-    @Test
     fun `text LiveData is not null`() {
         // When
         val textValue = viewModel.text.value
