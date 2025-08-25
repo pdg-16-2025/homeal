@@ -28,8 +28,7 @@ This document describes the complete CI/CD pipeline setup for the Homeal Android
 ```
 .github/workflows/
 ├── android-ci.yml       # Main CI pipeline (tests, build, lint)
-├── android-release.yml  # Release pipeline (triggered by tags)
-└── pr-checks.yml       # Pull request validation
+└── android-release.yml  # Release pipeline (triggered by tags)
 
 scripts/
 └── android-dev.sh      # Development helper script
@@ -61,13 +60,7 @@ android/
   - GitHub release creation
   - APK attachment to release
 
-### 3. PR Checks (`pr-checks.yml`)
-**Triggers**: Pull requests to `main` (only when Android files change)
 
-**Jobs**:
-- `changes`: Detect if Android files were modified
-- `validate-pr`: Run validation only if needed
-- Adds status comments to PRs
 
 ## 🛠 Development Tools
 

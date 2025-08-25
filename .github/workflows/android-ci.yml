@@ -3,8 +3,14 @@ name: Android CI
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-*.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-*.yml'
 
 permissions:
   contents: read
@@ -98,6 +104,24 @@ jobs:
       with:
         name: debug-apk
         path: android/app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Comment PR with build status
+      if: always() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { context } = require('@actions/github');
+          const jobStatus = '${{ job.status }}';
+          const emoji = jobStatus === 'success' ? '✅' : '❌';
+          const message = `${emoji} Android build ${jobStatus === 'success' ? 'passed' : 'failed'} for commit ${context.sha.slice(0, 7)}`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: message
+          });
 
   lint:
     name: Run Lint
