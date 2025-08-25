@@ -36,9 +36,7 @@ The Homeal project work process is organized around **short one-week sprints** w
 
 #### Branch Structure
 - **Main branch**: `main` - Production-ready code
-- **Feature branches**: `feature/issue-number-description`
-- **Release branches**: `release/version-number`
-- **Hotfix branches**: `hotfix/issue-description`
+- **Development branches**: `dev/issue-number-description`
 
 #### Branch Management
 - **One branch per issue/specification**
@@ -53,7 +51,7 @@ The Homeal project work process is organized around **short one-week sprints** w
    ```bash
    git checkout main
    git pull origin main
-   git checkout -b feature/123-fridge-management
+   git checkout -b dev/123-fridge-management
    ```
 
 2. **Development and commits**
@@ -73,16 +71,10 @@ The Homeal project work process is organized around **short one-week sprints** w
    ```bash
    git checkout main
    git pull origin main
-   git branch -d feature/123-fridge-management
+   git branch -d dev/123-fridge-management
    ```
 
 ### Naming Conventions
-
-#### Branches
-- `feature/[issue-number]-[short-description]`
-- `bugfix/[issue-number]-[short-description]`
-- `hotfix/[critical-issue-description]`
-- `release/[version-number]`
 
 #### Commit Messages
 ```
@@ -120,7 +112,7 @@ docs(api): update controller documentation
 
 ### Quality Gates
 - All tests must pass before merge
-- Code review approval required
+- Code review approval required (1 collaborator)
 - Documentation updates mandatory
 
 ### Testing Strategy
