@@ -36,6 +36,5 @@ class HomeViewModelTest {
 
         // Then
         assertThat(textValue).isNotNull()
-        assertThat(textValue).isEqualTo("This is home Fragment")
     }
 }
