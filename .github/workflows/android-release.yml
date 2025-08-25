@@ -132,5 +132,5 @@ jobs:
         gh release create v${{ steps.get_version.outputs.VERSION }} \
           --title "Homeal v${{ steps.get_version.outputs.VERSION }}" \
           --notes-file release_notes.md \
-          "${{ steps.apk_names.outputs.RELEASE_APK }}#homeal-v${{ steps.get_version.outputs.VERSION }}-release.apk" \
-          "${{ steps.apk_names.outputs.DEBUG_APK }}#homeal-v${{ steps.get_version.outputs.VERSION }}-debug.apk"
+          "${{ steps.apk_names.outputs.RELEASE_APK }}#homeal-release.apk" \
+          "${{ steps.apk_names.outputs.DEBUG_APK }}#homeal-debug.apk"
