@@ -17,7 +17,7 @@ func main() {
 
 	mux2 := http.NewServeMux()
 	mux2.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, World!")
+		fmt.Fprintf(w, "Hello, new World!")
 	})
 	if err := http.ListenAndServe(":3000", mux2); err != nil {
 		fmt.Printf("Server API error: %v\n", err)
