@@ -204,3 +204,34 @@ When you add the server component:
 ---
 
 This CI/CD setup provides a solid foundation for Android development with automated testing, building, and releasing. The pipeline ensures code quality and makes the release process smooth and reliable.
+
+# CI/CD Setup for the Homeal server
+
+The pipeline for the server is really straightforward. It consists of three wokflows:
+go tests, docker image build and push to docker hub and deployment to the server.
+All credentials are stored in GitHub secrets.
+
+## Go tests
+
+In this phase, we run all go tests present for the server. The tests are run on
+every push to the main branch and on every pull request to the main branch.
+
+## Docker image build and push
+
+In this phase, we build a docker image for the server and push it to docker hub.
+The credentials for docker hub are stored in:
+- `DOCKER_USERNAME`
+- `DOCKER_TOKEN`
+This phase is run every time go tests pass.
+
+## Deployment to the server
+
+In this phase, we deploy the new docker image to the server. This phase depends on:
+- `SERVER_SSH_KEY`: A private SSH key with access to the server
+- `SERVER_USER`: The user in `ssh SERVER_USER@SERVER_HOST`
+- `SERVER_HOST`: The host in `ssh SERVER_USER@SERVER_HOST`
+
+Through SSH, we connect to the server, stop the current docker container, remove
+it, pull the new image from docker hub and start a new container. 
+
+This phase is run every time a new image is pushed to docker hub.
