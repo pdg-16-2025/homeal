@@ -8,4 +8,3 @@ Core features:
 - Generate a smart shopping list from planned meals
 - Reduce waste with expiration‑based recommendations
 
-Docs: see `organization/ORGANIZATION.md` and `organization/ARCHITECTURE.md`.
