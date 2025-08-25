@@ -1,1 +1,7 @@
 /build
+
+# Keystore files - keep these secure!
+*.keystore
+*.jks
+*.b64
+homeal-release.keystore

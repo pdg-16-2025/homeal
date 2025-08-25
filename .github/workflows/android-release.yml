@@ -71,8 +71,16 @@ jobs:
       working-directory: ./android
       run: ./gradlew test
 
+    - name: Decode Keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > android/app/homeal-release.keystore
+
     - name: Build release APK
       working-directory: ./android
+      env:
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: ./gradlew assembleRelease
 
     - name: Build debug APK
