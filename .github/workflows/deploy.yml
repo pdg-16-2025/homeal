@@ -84,7 +84,7 @@ jobs:
         sleep 30
 
         # Test if the server is responding
-        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "curl -f http://localhost:8080 || exit 1"
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "curl -f http://localhost:3000 || exit 1"
 
         echo "Health check passed!"
       continue-on-error: false
@@ -93,7 +93,7 @@ jobs:
       if: success()
       run: |
         echo "✅ Deployment successful!"
-        echo "Server URL: http://${{ env.SERVER_HOST }}:8080"
+        echo "Server URL: http://${{ env.SERVER_HOST }}:3000"
 
     - name: Rollback on failure
       if: failure()
