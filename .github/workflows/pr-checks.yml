@@ -82,7 +82,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const { context } = require('@actions/github');
           const jobStatus = '${{ job.status }}';
           const emoji = jobStatus === 'success' ? '✅' : '❌';
           const message = `${emoji} Android build ${jobStatus === 'success' ? 'passed' : 'failed'} for commit ${context.sha.slice(0, 7)}`;
