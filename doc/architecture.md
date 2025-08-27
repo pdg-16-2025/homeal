@@ -21,4 +21,4 @@ from the server.
 
 ## Schema
 
-![Schema](schemas/architecture-schema.png)
+![Schema](diagrams/architecture-diagram.png)
