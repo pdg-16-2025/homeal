@@ -83,3 +83,5 @@ config.local.json
 *.parquet
 *.csv
 build/
+
+!server/homeal.db
