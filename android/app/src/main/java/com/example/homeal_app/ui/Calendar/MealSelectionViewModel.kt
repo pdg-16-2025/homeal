@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
+//TODO: Change with DB infos
 data class MealData(
     val name: String,
     val description: String = "",
@@ -35,6 +36,7 @@ class MealSelectionViewModel : ViewModel() {
 
     private fun loadMeals() {
         // TODO: Replace with DB
+        //Example data
         val meals = listOf(
             MealData(
                 name = "Caesar Salad",
@@ -78,7 +80,7 @@ class MealSelectionViewModel : ViewModel() {
     private fun loadRecommendations() {
     }
 
-    fun getPersonalizedRecommendations(mealType: String, dayOfWeek: String) {
+    fun getRecommendations(mealType: String, dayOfWeek: String) {
     }
 
     fun updateSearchQuery(query: String) {
@@ -103,8 +105,6 @@ class MealSelectionViewModel : ViewModel() {
 
         _filteredMeals.value = filtered
     }
-
-
 
 
     fun addCustomMeal(meal: MealData) {

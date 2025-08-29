@@ -4,40 +4,52 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.example.homeal_app.databinding.FragmentShoppingBinding
+import androidx.fragment.app.activityViewModels
+import kotlin.getValue
 
 
 class ShoppingFragment : Fragment() {
 
-    private var _binding: FragmentShoppingBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    private val shoppingViewModel: ShoppingViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val shoppingViewModel =
-            ViewModelProvider(this).get(ShoppingViewModel::class.java)
-
-        _binding = FragmentShoppingBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        val textView: TextView = binding.textShopping
-        shoppingViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        return ComposeView(requireContext()).apply {
+            setContent {
+                MaterialTheme {
+                    ShoppingScreen(viewModel = shoppingViewModel)
+                }
+            }
         }
-        return root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }
+
+@Composable
+fun ShoppingScreen(viewModel: ShoppingViewModel) {
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
