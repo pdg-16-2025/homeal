@@ -77,6 +77,7 @@
 
               echo "Android dev shell ready."
               echo "Hint: If adb doesn't see your device, ensure programs.adb.enable = true and you're in the 'adbusers' group on NixOS."
+              [ -n "$SHELL" ] && [ -x "$SHELL" ] && exec "$SHELL" || exec /bin/sh
             '';
           };
         });
