@@ -27,9 +27,6 @@ class FridgeViewModel : ViewModel() {
 
     private fun loadIngredients(){
         //TODO: load from DB
-        //Example ingredients
-        _ingredients.value = listOf(Ingredient("Apple"), Ingredient("Milk"), Ingredient("Bread"))
-
     }
 
     private fun loadAvailableIngredients() {

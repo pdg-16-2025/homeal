@@ -42,11 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.homeal_app.model.Ingredient
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 
 class FridgeFragment : Fragment() {
 
@@ -122,7 +118,7 @@ fun IngredientItem(
     onRemove: () -> Unit,
     onQuantityChange: (Int, String) -> Unit
 ) {
-    var quantity by remember { mutableStateOf(ingredient.quantity) }
+    var quantity: Int by remember { mutableStateOf(ingredient.quantity) }
     var unit by remember { mutableStateOf(ingredient.unit) }
     Row(
         modifier = Modifier
@@ -145,7 +141,7 @@ fun IngredientItem(
                 onValueChange = {
                     it.toIntOrNull()?.let { q ->
                         quantity = q
-                        onQuantityChange(q, unit)
+                        onQuantityChange(q.toInt(), unit)
                     }
                 },
                 modifier = Modifier.width(70.dp),
@@ -173,7 +169,7 @@ fun IngredientItem(
                             onClick = {
                                 unit = u
                                 expanded = false
-                                onQuantityChange(quantity, unit)
+                                onQuantityChange(quantity.toInt(), unit)
                             }
                         )
                     }
