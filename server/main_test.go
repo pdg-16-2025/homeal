@@ -56,3 +56,4 @@ func TestHealthCheck(t *testing.T) {
 // /recipe?id=210
 // /ingredients?search=tomato
 // /recipe-ingredients?recipe_id=139
+// /search-recipes?search=chicken&limit=5

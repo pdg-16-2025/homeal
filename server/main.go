@@ -42,6 +42,7 @@ func main() {
 	mux2.HandleFunc("/recipe", handler.handleRecipe)
 	mux2.HandleFunc("/ingredients", handler.handleIngredients)
 	mux2.HandleFunc("/recipe-ingredients", handler.handleRecipeIngredients)
+	mux2.HandleFunc("/search-recipes", handler.handleSearchRecipes)
 
 	if err := http.ListenAndServe(":3000", mux2); err != nil {
 		fmt.Printf("Server API error: %v\n", err)

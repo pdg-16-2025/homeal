@@ -40,7 +40,8 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 		for rows.Next() {
 			var recipe ShortRecipe
 			var totalTime sql.NullInt64
-			if err := rows.Scan(&recipe.Id, &recipe.Name, &totalTime, &recipe.ImageURL); err != nil {
+			var imageURL sql.NullString
+			if err := rows.Scan(&recipe.Id, &recipe.Name, &totalTime, &imageURL); err != nil {
 				http.Error(w, fmt.Sprintf("Row scan error: %v", err), http.StatusInternalServerError)
 				return
 			}
@@ -48,6 +49,11 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 				recipe.TotalTime = int(totalTime.Int64)
 			} else {
 				recipe.TotalTime = 0
+			}
+			if imageURL.Valid {
+				recipe.ImageURL = imageURL.String
+			} else {
+				recipe.ImageURL = ""
 			}
 			recommendations = append(recommendations, recipe)
 		}
