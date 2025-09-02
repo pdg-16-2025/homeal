@@ -1,12 +1,26 @@
 package com.example.homeal_app.ui.Fridge
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.homeal_app.model.Ingredient
+import com.example.homeal_app.model.FridgeIngredient
+import com.example.homeal_app.data.repository.FridgeRepository
+import com.example.homeal_app.data.local.database.AppDatabase
+import com.example.homeal_app.data.remote.NetworkModule
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 
-class FridgeViewModel : ViewModel() {
+class FridgeViewModel(application: Application) : AndroidViewModel(application) {
+
+    // Initialize repository with database and API service
+    private val repository = FridgeRepository(
+        AppDatabase.getDatabase(application).fridgeDao(),
+        NetworkModule.apiService
+    )
 
     private val _ingredients = MutableStateFlow<List<Ingredient>>(emptyList())
     val ingredients : StateFlow<List<Ingredient>> = _ingredients.asStateFlow()
@@ -26,7 +40,19 @@ class FridgeViewModel : ViewModel() {
     }
 
     private fun loadIngredients(){
-        //TODO: load from DB
+        // Load from local database and convert FridgeIngredient to Ingredient for UI compatibility
+        viewModelScope.launch {
+            repository.getFridgeIngredients().collect { fridgeIngredients ->
+                _ingredients.value = fridgeIngredients.map { fridgeIngredient ->
+                    Ingredient(
+                        id = fridgeIngredient.ingredientId,
+                        name = fridgeIngredient.name,
+                        quantity = fridgeIngredient.quantity,
+                        unit = fridgeIngredient.unit
+                    )
+                }
+            }
+        }
     }
 
     private fun loadAvailableIngredients() {
@@ -37,13 +63,28 @@ class FridgeViewModel : ViewModel() {
         )
     }
 
-    fun updateSearchQuery( query: String){
+    fun updateSearchQuery(query: String){
         _searchQuery.value = query
+        // Search server ingredients when query changes
+        if (query.isNotBlank()) {
+            viewModelScope.launch {
+                try {
+                    val serverIngredients = repository.searchAvailableIngredients(query)
+                    _availableIngredients.value = serverIngredients.map { it.name }
+                } catch (e: Exception) {
+                    // Keep fallback list on error
+                }
+            }
+        }
     }
 
     fun showDialog(){
         _showAddDialog.value = true
         _searchQuery.value = ""
+        // Reset to fallback suggestions when opening dialog
+        _availableIngredients.value = listOf(
+            "Apple", "Banana", "Bread", "Butter", "Carrot", "Cheese"
+        )
     }
 
     fun hideDialog() {
@@ -64,27 +105,57 @@ class FridgeViewModel : ViewModel() {
 
     fun addIngredient(ingredientName: String) {
         if (ingredientName.isNotBlank() && !_ingredients.value.any{it.name == ingredientName}) {
-            _ingredients.value = _ingredients.value + Ingredient(name = ingredientName)
-            hideDialog()
+            viewModelScope.launch {
+                try {
+                    val ingredient = Ingredient(
+                        id = 0, // Will be set by server or generated
+                        name = ingredientName
+                    )
+                    repository.addToFridge(ingredient, 1, "pcs")
+                    hideDialog()
+                } catch (e: Exception) {
+                    // Handle error
+                }
+            }
         }
     }
 
     fun addIngredientByBarcode(barcode: String) {
-
+        viewModelScope.launch {
+            try {
+                val ingredient = repository.scanIngredient(barcode)
+                ingredient?.let {
+                    repository.addToFridge(it, 1, "pcs", barcode = barcode)
+                }
+            } catch (e: Exception) {
+                // Handle scanning error
+            }
+        }
     }
 
     fun updateIngredientQuantity(name: String, newQuantity: Int, newUnit: String) {
         _ingredients.value = _ingredients.value.map {
             if (it.name == name) it.copy(quantity = newQuantity, unit = newUnit) else it
         }
+        
+        // TODO: Update in database as well
+        // This would require finding the FridgeIngredient and updating it
     }
 
     fun removeIngredient(ingredient: Ingredient) {
-        _ingredients.value = _ingredients.value - ingredient
-    }
-
-    fun removeIngredientsForRecipe(recipeId : Int) {
-
+        viewModelScope.launch {
+            try {
+                val fridgeIngredient = FridgeIngredient(
+                    ingredientId = ingredient.id,
+                    name = ingredient.name,
+                    quantity = ingredient.quantity,
+                    unit = ingredient.unit
+                )
+                repository.removeFromFridge(fridgeIngredient)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
     }
 
 }

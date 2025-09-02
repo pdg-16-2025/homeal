@@ -40,13 +40,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.example.homeal_app.model.Ingredient
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModelProvider
 
 class FridgeFragment : Fragment() {
 
-    private val fridgeViewModel: FridgeViewModel by activityViewModels()
+    private val fridgeViewModel: FridgeViewModel by viewModels {
+        ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+    }
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
