@@ -273,3 +273,84 @@ GET /recipe-ingredients?recipe_id=139
   }
 ]
 ```
+
+## GET /search-recipes
+**Arguments:**
+- `search` (string, optional): A search term to filter recipes by name.
+- `limit` (integer, optional): The maximum number of recipes to return (default is 10).
+
+**Example Request:**
+```
+GET /search-recipes?search=chicken
+```
+
+**Returns:**
+- `200 OK`: JSON array of recipes.
+- `400 Bad Request`: If parameters are invalid.
+- `500 Internal Server Error`: If an unexpected error occurs.
+
+**Example Response:**
+```json
+[
+  {
+    "id":16259,
+    "name":"Almond Chicken",
+    "total_time":40,
+    "image_url":"https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/16/25/9/picAc9xvD.jpg"
+  },
+  {
+    "id":22252,
+    "name":"Baked Chicken Parmesan",
+    "total_time":50,
+    "image_url":""
+  },
+  {
+    "id":2650,
+    "name":"Beer Can Chicken",
+    "total_time":120,
+    "image_url":"https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/26/50/picB5PkRg.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/26/50/pic3cbODl.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/26/50/piccQ2Ep6.jpg"
+  },
+  {
+    "id":21419,
+    "name":"Cheese Stuffed Chicken Breasts",
+    "total_time":35,
+    "image_url":"https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/21/41/9/pic41wJQs.jpg"
+  },
+  {
+    "id":17593,
+    "name":"Chicken And Mashed Potato Bake",
+    "total_time":27,
+    "image_url":""
+  },
+  {
+    "id":13318,
+    "name":"Chicken And Pasta",
+    "total_time":70,
+    "image_url":"https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/13/31/8/picIgbHzv.jpg"
+  },
+  {
+    "id":26377,
+    "name":"Chicken Fettuccine",
+    "total_time":40,
+    "image_url":""
+  },
+  {
+    "id":22473,
+    "name":"Chicken Italiano",
+    "total_time":40,
+    "image_url":""
+  },
+  {
+    "id":6914,
+    "name":"Chicken Salad Supreme",
+    "total_time":15,
+    "image_url":"https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/69/14/picW0np29.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/69/14/picZL1tTw.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/69/14/pice3LWss.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/69/14/pic5Fp7V5.jpg"
+  },
+  {
+    "id":13511,
+    "name":"Chicken Stir Fry with Snow Peas and Cashew Nuts",
+    "total_time":30,
+    "image_url":"https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/13/51/1/picppeUYr.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/13/51/1/picWthEWw.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/13/51/1/piczR0P1V.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/13/51/1/pic3NQaPT.jpg, https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/13/51/1/picdvcEMH.jpg"
+  }
+]
+```
