@@ -8,20 +8,23 @@ import com.example.homeal_app.model.FridgeIngredient
 import com.example.homeal_app.data.local.dao.FridgeDao
 import com.example.homeal_app.model.PlannedMeal
 import com.example.homeal_app.data.local.dao.PlannedMealDao
+import com.example.homeal_app.model.ShoppingIngredient
+import com.example.homeal_app.data.local.dao.ShoppingDao
 
 /**
  * Main database configuration for the app
  * Contains all local entities and provides DAOs
  */
 @Database(
-    entities = [FridgeIngredient::class, PlannedMeal::class],
-    version = 2,
+    entities = [FridgeIngredient::class, PlannedMeal::class, ShoppingIngredient::class],
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     
     abstract fun fridgeDao(): FridgeDao
     abstract fun plannedMealDao(): PlannedMealDao
+    abstract fun shoppingDao(): ShoppingDao
     
     companion object {
         @Volatile

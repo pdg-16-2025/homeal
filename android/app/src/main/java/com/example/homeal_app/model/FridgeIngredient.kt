@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
 data class FridgeIngredient(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val ingredientId: Int, // Reference to server ingredient ID
+    val ingredientId: Int = 0, // Reference to server ingredient ID
     val name: String,
     val quantity: Int,
     val unit: String,

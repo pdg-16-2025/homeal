@@ -1,160 +1,135 @@
 package com.example.homeal_app.ui.Fridge
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.homeal_app.model.Ingredient
-import com.example.homeal_app.model.FridgeIngredient
 import com.example.homeal_app.data.repository.FridgeRepository
 import com.example.homeal_app.data.local.database.AppDatabase
 import com.example.homeal_app.data.remote.NetworkModule
+import com.example.homeal_app.model.FridgeIngredient
+import com.example.homeal_app.model.Ingredient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 
 class FridgeViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Initialize repository with database and API service
     private val repository = FridgeRepository(
         AppDatabase.getDatabase(application).fridgeDao(),
         NetworkModule.apiService
     )
 
-    private val _ingredients = MutableStateFlow<List<Ingredient>>(emptyList())
-    val ingredients : StateFlow<List<Ingredient>> = _ingredients.asStateFlow()
+    // Fridge ingredients from local database
+    val ingredients: LiveData<List<FridgeIngredient>> =
+        repository.getAllIngredients().asLiveData()
 
-    private val _availableIngredients = MutableStateFlow<List<String>>(emptyList())
-    val availableIngredients: StateFlow<List<String>> = _availableIngredients.asStateFlow()
+    // Search functionality
+    private val _searchQuery = MutableLiveData("")
+    val searchQuery: LiveData<String> = _searchQuery
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _availableIngredients = MutableLiveData<List<Ingredient>>()
+    val availableIngredients: LiveData<List<Ingredient>> = _availableIngredients
 
+    // Dialog state
     private val _showAddDialog = MutableStateFlow(false)
-    val showAddDialog: StateFlow<Boolean> = _showAddDialog.asStateFlow()
+    val showAddDialog: StateFlow<Boolean> = _showAddDialog
 
-    init {
-        loadIngredients()
-        loadAvailableIngredients()
+    /**
+     * Show add ingredient dialog
+     */
+    fun showDialog() {
+        _showAddDialog.value = true
+        _searchQuery.value = ""
+        _availableIngredients.value = emptyList()
     }
 
-    private fun loadIngredients(){
-        // Load from local database and convert FridgeIngredient to Ingredient for UI compatibility
-        viewModelScope.launch {
-            repository.getFridgeIngredients().collect { fridgeIngredients ->
-                _ingredients.value = fridgeIngredients.map { fridgeIngredient ->
-                    Ingredient(
-                        id = fridgeIngredient.ingredientId,
-                        name = fridgeIngredient.name,
-                        quantity = fridgeIngredient.quantity,
-                        unit = fridgeIngredient.unit
-                    )
-                }
-            }
-        }
+    /**
+     * Hide add ingredient dialog
+     */
+    fun hideDialog() {
+        _showAddDialog.value = false
+        _searchQuery.value = ""
+        _availableIngredients.value = emptyList()
     }
 
-    private fun loadAvailableIngredients() {
-        // TODO: load from database
-        // Example list
-        _availableIngredients.value = listOf(
-            "Apple", "Banana", "Bread", "Butter", "Carrot", "Cheese"
-        )
-    }
-
-    fun updateSearchQuery(query: String){
+    /**
+     * Update search query and get suggestions from server
+     */
+    fun updateSearchQuery(query: String) {
         _searchQuery.value = query
-        // Search server ingredients when query changes
         if (query.isNotBlank()) {
             viewModelScope.launch {
                 try {
                     val serverIngredients = repository.searchAvailableIngredients(query)
-                    _availableIngredients.value = serverIngredients.map { it.name }
+                    _availableIngredients.value = serverIngredients
                 } catch (e: Exception) {
-                    // Keep fallback list on error
+                    // Keep empty list on error
+                    _availableIngredients.value = emptyList()
                 }
             }
-        }
-    }
-
-    fun showDialog(){
-        _showAddDialog.value = true
-        _searchQuery.value = ""
-        // Reset to fallback suggestions when opening dialog
-        _availableIngredients.value = listOf(
-            "Apple", "Banana", "Bread", "Butter", "Carrot", "Cheese"
-        )
-    }
-
-    fun hideDialog() {
-        _showAddDialog.value = false
-        _searchQuery.value = ""
-    }
-
-    fun getFilteredAvailableIngredients(): List<String> {
-        val query = _searchQuery.value.lowercase()
-        if (query.isBlank()){
-            return _availableIngredients.value.take(3)
         } else {
-            return _availableIngredients.value.filter {
-                it.lowercase().contains(query)
-            }.take(5)
+            _availableIngredients.value = emptyList()
         }
     }
 
-    fun addIngredient(ingredientName: String) {
-        if (ingredientName.isNotBlank() && !_ingredients.value.any{it.name == ingredientName}) {
-            viewModelScope.launch {
-                try {
-                    val ingredient = Ingredient(
-                        id = 0, // Will be set by server or generated
-                        name = ingredientName
-                    )
-                    repository.addToFridge(ingredient, 1, "pcs")
-                    hideDialog()
-                } catch (e: Exception) {
-                    // Handle error
-                }
-            }
-        }
-    }
-
-    fun addIngredientByBarcode(barcode: String) {
+    /**
+     * Add ingredient manually (typed by user)
+     */
+    fun addIngredient(name: String, quantity: Int = 1, unit: String = "pcs") {
         viewModelScope.launch {
             try {
-                val ingredient = repository.scanIngredient(barcode)
-                ingredient?.let {
-                    repository.addToFridge(it, 1, "pcs", barcode = barcode)
-                }
-            } catch (e: Exception) {
-                // Handle scanning error
-            }
-        }
-    }
-
-    fun updateIngredientQuantity(name: String, newQuantity: Int, newUnit: String) {
-        _ingredients.value = _ingredients.value.map {
-            if (it.name == name) it.copy(quantity = newQuantity, unit = newUnit) else it
-        }
-        
-        // TODO: Update in database as well
-        // This would require finding the FridgeIngredient and updating it
-    }
-
-    fun removeIngredient(ingredient: Ingredient) {
-        viewModelScope.launch {
-            try {
-                val fridgeIngredient = FridgeIngredient(
-                    ingredientId = ingredient.id,
-                    name = ingredient.name,
-                    quantity = ingredient.quantity,
-                    unit = ingredient.unit
-                )
-                repository.removeFromFridge(fridgeIngredient)
+                repository.addIngredient(name, quantity, unit)
             } catch (e: Exception) {
                 // Handle error
             }
         }
     }
 
+    /**
+     * Add ingredient from server suggestion
+     */
+    fun addIngredientFromSuggestion(ingredient: Ingredient) {
+        viewModelScope.launch {
+            try {
+                repository.addIngredient(ingredient.name, 1, "pcs")
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    /**
+     * Remove ingredient from fridge
+     */
+    fun removeIngredient(ingredient: FridgeIngredient) {
+        viewModelScope.launch {
+            try {
+                repository.removeIngredient(ingredient)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    /**
+     * Update ingredient quantity and unit
+     */
+    fun updateIngredientQuantity(name: String, quantity: Int, unit: String) {
+        viewModelScope.launch {
+            try {
+                repository.updateIngredientQuantity(name, quantity, unit)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    // DEPRECATED: Remove this method
+    @Deprecated("Use availableIngredients LiveData instead")
+    fun getFilteredAvailableIngredients(): List<String> {
+        return _availableIngredients.value?.map { it.name } ?: emptyList()
+    }
 }

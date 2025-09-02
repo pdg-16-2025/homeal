@@ -1,63 +1,122 @@
 package com.example.homeal_app.ui.Shopping
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import com.example.homeal_app.data.repository.ShoppingRepository
+import com.example.homeal_app.data.local.database.AppDatabase
+import com.example.homeal_app.data.remote.NetworkModule
+import com.example.homeal_app.model.ShoppingIngredient
+import com.example.homeal_app.model.Ingredient
+import kotlinx.coroutines.launch
 
-data class ShoppingIngredient(
-    val id: String,
-    val name: String,
-    val quantity: String,
-    val isDone: Boolean = false
-)
+class ShoppingViewModel(application: Application) : AndroidViewModel(application) {
 
-class ShoppingViewModel : ViewModel() {
+    // Initialize repository
+    private val repository = ShoppingRepository(
+        AppDatabase.getDatabase(application).shoppingDao(),
+        NetworkModule.apiService
+    )
 
-    private val _ingredients = MutableLiveData<List<ShoppingIngredient>>().apply {
-        value = listOf(
-            ShoppingIngredient("1", "Tomatoes", "2 kg", false),
-            ShoppingIngredient("2", "Onions", "500g", false),
-            ShoppingIngredient("3", "Garlic", "1 bulb", true),
-            ShoppingIngredient("4", "Olive Oil", "250ml", false),
-            ShoppingIngredient("5", "Pasta", "500g", false)
-        )
+    // Shopping list from database
+    val ingredients: LiveData<List<ShoppingIngredient>> =
+        repository.getAllShoppingIngredients().asLiveData()
+
+    // Search functionality
+    private val _searchQuery = MutableLiveData("")
+    val searchQuery: LiveData<String> = _searchQuery
+
+    private val _availableIngredients = MutableLiveData<List<Ingredient>>()
+    val availableIngredients: LiveData<List<Ingredient>> = _availableIngredients
+
+    /**
+     * Update search query and fetch suggestions from server
+     */
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        if (query.isNotBlank()) {
+            viewModelScope.launch {
+                try {
+                    val serverIngredients = repository.searchAvailableIngredients(query)
+                    _availableIngredients.value = serverIngredients
+                } catch (e: Exception) {
+                    // Keep empty list on error
+                    _availableIngredients.value = emptyList()
+                }
+            }
+        } else {
+            _availableIngredients.value = emptyList()
+        }
     }
-    val ingredients: LiveData<List<ShoppingIngredient>> = _ingredients
 
-    fun toggleIngredientDone(ingredientId: String) {
-        val currentList = _ingredients.value ?: return
-        val updatedList = currentList.map { ingredient ->
-            if (ingredient.id == ingredientId) {
-                ingredient.copy(isDone = !ingredient.isDone)
-            } else {
-                ingredient
+    /**
+     * Add ingredient to shopping list (manual entry)
+     */
+    fun addIngredient(name: String, quantity: String) {
+        viewModelScope.launch {
+            try {
+                repository.addShoppingIngredient(name, quantity)
+            } catch (e: Exception) {
+                // Handle error
             }
         }
-        _ingredients.value = updatedList
     }
 
-    fun addIngredient(name: String, quantity: String) {
-        if (name.isBlank() || quantity.isBlank()) return
-
-        val currentList = _ingredients.value ?: emptyList()
-        val newIngredient = ShoppingIngredient(
-            id = (currentList.size + 1).toString(),
-            name = name.trim(),
-            quantity = quantity.trim(),
-            isDone = false
-        )
-        _ingredients.value = currentList + newIngredient
+    /**
+     * Add ingredient from server suggestion
+     */
+    fun addIngredientFromSuggestion(ingredient: Ingredient, quantity: String = "1 pcs") {
+        viewModelScope.launch {
+            try {
+                repository.addIngredientFromSuggestion(ingredient, quantity)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
     }
 
-    fun removeIngredient(ingredientId: String) {
-        val currentList = _ingredients.value ?: return
-        val updatedList = currentList.filterNot { it.id == ingredientId }
-        _ingredients.value = updatedList
+    /**
+     * Remove ingredient from shopping list
+     */
+    fun removeIngredient(ingredientId: Int) {
+        viewModelScope.launch {
+            try {
+                repository.removeShoppingIngredient(ingredientId)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
     }
 
+    /**
+     * Toggle ingredient done status (for strikethrough effect)
+     */
+    fun toggleIngredientDone(ingredientId: Int) {
+        viewModelScope.launch {
+            try {
+                val currentIngredient = ingredients.value?.find { it.id == ingredientId }
+                currentIngredient?.let {
+                    repository.toggleIngredientDone(ingredientId, !it.isDone)
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    /**
+     * Remove all marked (completed) ingredients
+     */
     fun removeAllMarkedIngredients() {
-        val currentList = _ingredients.value ?: return
-        val updatedList = currentList.filterNot { it.isDone }
-        _ingredients.value = updatedList
+        viewModelScope.launch {
+            try {
+                repository.removeAllMarkedIngredients()
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
     }
 }

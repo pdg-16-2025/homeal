@@ -22,6 +22,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.homeal_app.ui.components.IngredientSearchBar
+import com.example.homeal_app.model.ShoppingIngredient
+
 
 
 class ShoppingFragment : Fragment() {
@@ -46,6 +49,8 @@ class ShoppingFragment : Fragment() {
 @Composable
 fun ShoppingScreen(viewModel: ShoppingViewModel) {
     val ingredients by viewModel.ingredients.observeAsState(emptyList())
+    val searchQuery by viewModel.searchQuery.observeAsState("")
+    val availableIngredients by viewModel.availableIngredients.observeAsState(emptyList())
     var showAddDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -88,6 +93,21 @@ fun ShoppingScreen(viewModel: ShoppingViewModel) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        IngredientSearchBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+            suggestions = availableIngredients,
+            onSuggestionClick = { ingredient ->
+                viewModel.addIngredientFromSuggestion(ingredient)
+            },
+            onAddIngredient = { name ->
+                viewModel.addIngredient(name, "1 pcs")
+            },
+            placeholder = "Add ingredients to shopping list..."
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

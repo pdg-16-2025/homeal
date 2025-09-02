@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -24,34 +23,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.example.homeal_app.model.Ingredient
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModelProvider
+import com.example.homeal_app.model.FridgeIngredient
+import com.example.homeal_app.ui.components.IngredientSearchBar
 
 class FridgeFragment : Fragment() {
 
     private val fridgeViewModel: FridgeViewModel by viewModels {
         ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
     }
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,61 +66,108 @@ class FridgeFragment : Fragment() {
 
 @Composable
 fun FridgeScreen(viewModel: FridgeViewModel) {
-    val ingredients by viewModel.ingredients.collectAsState()
+    val ingredients by viewModel.ingredients.observeAsState(emptyList())
+    val searchQuery by viewModel.searchQuery.observeAsState("")
+    val availableIngredients by viewModel.availableIngredients.observeAsState(emptyList())
     val showAddDialog by viewModel.showAddDialog.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Button(
-            onClick = { viewModel.showDialog() },
-            modifier = Modifier.padding(bottom = 16.dp)
+        
+        // Header with Add button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Add Ingredient")
+            
+            Button(
+                onClick = { viewModel.showDialog() }
+            ) {
+                Text("Add Ingredient")
+            }
         }
-        // Ingredient list
-        LazyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            items(
-                items = ingredients,
-                key = { it.name }
-            ) { ingredient ->
-                Column {
-                    IngredientItem(
-                        ingredient = ingredient,
-                        onRemove = { viewModel.removeIngredient(ingredient) },
-                        onQuantityChange = { q, u ->
-                            viewModel.updateIngredientQuantity(ingredient.name, q, u)
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Show search bar only when dialog is open
+        if (showAddDialog) {
+            IngredientSearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+                suggestions = availableIngredients,
+                onSuggestionClick = { ingredient ->
+                    viewModel.addIngredientFromSuggestion(ingredient)
+                    viewModel.hideDialog()
+                },
+                onAddIngredient = { name ->
+                    viewModel.addIngredient(name)
+                    viewModel.hideDialog()
+                },
+                placeholder = "Search ingredients to add to fridge..."
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Cancel button
+            Button(
+                onClick = { viewModel.hideDialog() },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Cancel")
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Ingredients list
+        if (ingredients.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Your fridge is empty.\nTap 'Add Ingredient' to get started!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f)
+            ) {
+                items(
+                    items = ingredients,
+                    key = { it.name }
+                ) { ingredient ->
+                    Column {
+                        IngredientItem(
+                            ingredient = ingredient,
+                            onRemove = { viewModel.removeIngredient(ingredient) },
+                            onQuantityChange = { q, u ->
+                                viewModel.updateIngredientQuantity(ingredient.name, q, u)
+                            }
+                        )
+                        if (ingredient != ingredients.last()) {
+                            Divider()
                         }
-                    )
-                    if (ingredient != ingredients.last()) {
-                        Divider()
                     }
                 }
             }
-        }
-
-
-        if (showAddDialog) {
-            AddIngredientDialog(
-                searchQuery = searchQuery,
-                onSearchQueryChange = viewModel::updateSearchQuery,
-                availableIngredients = viewModel.getFilteredAvailableIngredients(),
-                onIngredientSelected = viewModel::addIngredient,
-                onDismiss = viewModel::hideDialog
-            )
         }
     }
 }
 
 @Composable
 fun IngredientItem(
-    ingredient: Ingredient,
+    ingredient: FridgeIngredient,
     onRemove: () -> Unit,
     onQuantityChange: (Int, String) -> Unit
 ) {
     var quantity: Int by remember { mutableStateOf(ingredient.quantity) }
     var unit by remember { mutableStateOf(ingredient.unit) }
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,7 +189,7 @@ fun IngredientItem(
                 onValueChange = {
                     it.toIntOrNull()?.let { q ->
                         quantity = q
-                        onQuantityChange(q.toInt(), unit)
+                        onQuantityChange(q, unit)
                     }
                 },
                 modifier = Modifier.width(70.dp),
@@ -156,7 +199,7 @@ fun IngredientItem(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // unit menu
+            // Unit dropdown menu
             var expanded by remember { mutableStateOf(false) }
             val units = listOf("pcs", "kg", "g", "L", "ml")
 
@@ -174,7 +217,7 @@ fun IngredientItem(
                             onClick = {
                                 unit = u
                                 expanded = false
-                                onQuantityChange(quantity.toInt(), unit)
+                                onQuantityChange(quantity, u)
                             }
                         )
                     }
@@ -189,62 +232,4 @@ fun IngredientItem(
             )
         }
     }
-}
-
-
-@Composable
-fun AddIngredientDialog(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    availableIngredients: List<String>,
-    onIngredientSelected: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add Ingredient") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    label = { Text("Search ingredients...") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = if (searchQuery.isBlank()) "Suggested:" else "Results:",
-                    style = MaterialTheme.typography.labelMedium
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Show filtered ingredients
-                LazyColumn(modifier = Modifier.height(150.dp)) {
-                    items(availableIngredients) { ingredient ->
-                        Card(
-                            onClick = { onIngredientSelected(ingredient) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 2.dp),
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = ingredient,
-                                modifier = Modifier.padding(12.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
 }

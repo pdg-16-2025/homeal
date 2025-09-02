@@ -4,6 +4,7 @@ import com.example.homeal_app.model.Ingredient
 import com.example.homeal_app.model.Recipe
 import com.example.homeal_app.model.RecipeDetails
 import com.example.homeal_app.model.RecipeIngredient
+import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -68,5 +69,20 @@ interface ApiService {
      * @param code Barcode string from scanner
      */
     @GET("scan")
-    suspend fun scanBarcode(@Query("code") code: String): Ingredient
+    suspend fun scanBarcode(@Query("code") barcode: String): ScanResult
 }
+
+/**
+ * Data class representing the result of a barcode scan
+ * @property found Indicates if the ingredient was found
+ * @property ingredient The ingredient details if found
+ * @property message Additional message or error description
+ */
+data class ScanResult(
+    @SerializedName("found")
+    val found: Boolean = false,
+    @SerializedName("ingredient")
+    val ingredient: Ingredient? = null,
+    @SerializedName("message")
+    val message: String = ""
+)

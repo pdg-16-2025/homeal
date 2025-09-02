@@ -29,6 +29,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.homeal_app.data.remote.NetworkModule
+import com.example.homeal_app.ui.components.IngredientSearchBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -38,6 +40,10 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.example.homeal_app.model.Ingredient
 
 class ScanFragment : Fragment() {
 
@@ -167,6 +173,12 @@ fun BarcodeScannerScreen(viewModel: ScanViewModel) {
                 onCancel = { viewModel.closeDialog() }
             )
         }
+        is DialogState.Success -> {
+            SuccessDialog(
+                message = currentDialogState.message,
+                onDismiss = { viewModel.closeDialog() }
+            )
+        }
         DialogState.None -> {
             // No dialog
         }
@@ -280,187 +292,149 @@ fun ProductNotFoundDialog(
     onProductSelected: (Product, Int) -> Unit,
     onCancel: () -> Unit
 ) {
-    var quantity by remember { mutableStateOf(1) }
-    var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    var showProductSearch by remember { mutableStateOf(false) }
-
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = {
-            Text("Product Not Found")
-        },
-        text = {
-            Column {
-                Text("No product found for barcode: $barcode")
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (selectedProduct == null) {
-                    Text("Please select a product manually:")
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = { showProductSearch = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Search Products")
-                    }
-                } else {
-                    Text("Selected product:")
-                    Text(
-                        text = selectedProduct!!.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    selectedProduct!!.category?.let {
-                        Text(
-                            text = "Category: $it",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Quantity selector
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Quantity:", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        // Decrease button
-                        Button(
-                            onClick = { if (quantity > 1) quantity-- },
-                            enabled = quantity > 1
-                        ) {
-                            Text("-")
-                        }
-
-                        Text(
-                            text = quantity.toString(),
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            textAlign = TextAlign.Center
-                        )
-
-                        // Increase button
-                        Button(
-                            onClick = { quantity++ }
-                        ) {
-                            Text("+")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(
-                        onClick = { selectedProduct = null }
-                    ) {
-                        Text("Change Product")
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            if (selectedProduct != null) {
-                Button(
-                    onClick = { onProductSelected(selectedProduct!!, quantity) }
-                ) {
-                    Text("Add to Owned")
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onCancel) {
-                Text("Cancel")
-            }
-        }
-    )
-
-    // Product search dialog
-    if (showProductSearch) {
-        ProductSearchDialog(
-            onProductSelected = { product ->
-                selectedProduct = product
-                showProductSearch = false
-            },
-            onCancel = { showProductSearch = false }
-        )
-    }
-}
-
-@Composable
-fun ProductSearchDialog(
-    onProductSelected: (Product) -> Unit,
-    onCancel: () -> Unit
-) {
+    var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) }
+    var quantity by remember { mutableStateOf("1") }
+    
+    // Search state for IngredientSearchBar
     var searchQuery by remember { mutableStateOf("") }
-
-    // TODO: Replace with actual product search from database/API
-    val sampleProducts = listOf(
-        Product("1", "Apples", "Fruits"),
-        Product("2", "Bread", "Bakery"),
-        Product("3", "Milk", "Dairy"),
-        Product("4", "Chicken Breast", "Meat"),
-        Product("5", "Rice", "Grains")
-    )
-
-    val filteredProducts = sampleProducts.filter {
-        it.name.contains(searchQuery, ignoreCase = true)
+    var searchResults by remember { mutableStateOf<List<Ingredient>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+    
+    // Search function using server
+    val searchProducts = { query: String ->
+        if (query.isNotBlank()) {
+            isLoading = true
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                try {
+                    val results = NetworkModule.apiService.searchIngredients(search = query, limit = 10)
+                    searchResults = results
+                } catch (e: Exception) {
+                    searchResults = emptyList()
+                } finally {
+                    isLoading = false
+                }
+            }
+        } else {
+            searchResults = emptyList()
+        }
     }
 
     AlertDialog(
         onDismissRequest = onCancel,
         title = {
-            Text("Select Product")
+            Column {
+                Text("Product Not Found")
+                Text(
+                    text = "Barcode: $barcode",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
         },
         text = {
-            Column {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    label = { Text("Search products...") },
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 200.dp, max = 400.dp)
+            ) {
+                Text(
+                    text = "Search manually or add custom product:",
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // Use the reusable IngredientSearchBar
+                IngredientSearchBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { query ->
+                        searchQuery = query
+                        searchProducts(query)
+                    },
+                    suggestions = searchResults,
+                    onSuggestionClick = { ingredient ->
+                        selectedIngredient = ingredient
+                        searchQuery = ingredient.name
+                        searchResults = emptyList()
+                    },
+                    onAddIngredient = { name ->
+                        // Create custom ingredient
+                        val customIngredient = Ingredient(
+                            id = 0, // Custom ingredient ID
+                            name = name
+                        )
+                        selectedIngredient = customIngredient
+                        searchQuery = name
+                    },
+                    placeholder = "Search or type product name...",
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Product list
-                filteredProducts.forEach { product ->
+                // Show loading indicator if searching
+                if (isLoading) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Searching...", fontSize = 12.sp)
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // Show selected ingredient
+                selectedIngredient?.let { ingredient ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        onClick = { onProductSelected(product) }
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = product.name,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
+                                text = "Selected: ${ingredient.name}",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                            product.category?.let {
-                                Text(
-                                    text = it,
-                                    fontSize = 12.sp,
-                                    color = Color.Gray
-                                )
-                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // Quantity input
+                            OutlinedTextField(
+                                value = quantity,
+                                onValueChange = { newQuantity ->
+                                    if (newQuantity.toIntOrNull() != null || newQuantity.isEmpty()) {
+                                        quantity = newQuantity
+                                    }
+                                },
+                                label = { Text("Quantity") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
                         }
                     }
                 }
-
-                if (filteredProducts.isEmpty() && searchQuery.isNotEmpty()) {
-                    Text(
-                        text = "No products found",
-                        color = Color.Gray,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
             }
         },
-        confirmButton = {},
+        confirmButton = {
+            Button(
+                onClick = {
+                    selectedIngredient?.let { ingredient ->
+                        val quantityInt = quantity.toIntOrNull() ?: 1
+                        val product = Product.fromIngredient(ingredient)
+                        onProductSelected(product, quantityInt)
+                    }
+                },
+                enabled = selectedIngredient != null && quantity.toIntOrNull() != null
+            ) {
+                Text("Add to Fridge")
+            }
+        },
         dismissButton = {
             TextButton(onClick = onCancel) {
                 Text("Cancel")
@@ -549,4 +523,28 @@ private fun processImageProxy(
         .addOnCompleteListener {
             imageProxy.close()
         }
+}
+
+@Composable
+fun SuccessDialog(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Success!")
+        },
+        text = {
+            Text(
+                text = message,
+                fontSize = 16.sp
+            )
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Continue Scanning")
+            }
+        }
+    )
 }

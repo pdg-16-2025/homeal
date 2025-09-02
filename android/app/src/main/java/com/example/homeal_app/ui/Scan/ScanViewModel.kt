@@ -1,26 +1,50 @@
 package com.example.homeal_app.ui.Scan
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.homeal_app.data.repository.ScanRepository
+import com.example.homeal_app.data.local.database.AppDatabase
+import com.example.homeal_app.data.remote.NetworkModule
+import com.example.homeal_app.model.Ingredient
 import kotlinx.coroutines.launch
 
-// Data classes for dialog states and product information
+// Keep existing data classes
 data class Product(
     val id: String,
     val name: String,
     val category: String? = null
-)
+) {
+    // Convert from Ingredient
+    companion object {
+        fun fromIngredient(ingredient: Ingredient): Product {
+            return Product(
+                id = ingredient.id.toString(),
+                name = ingredient.name,
+                category = "Food" // Default category
+            )
+        }
+    }
+}
 
 sealed class DialogState {
     object None : DialogState()
-    data class ProductFound(val product: Product, val barcode: String) : DialogState()
+    data class ProductFound(val product: Product, val barcode: String, val ingredient: Ingredient) : DialogState()
     data class ProductNotFound(val barcode: String) : DialogState()
     object Loading : DialogState()
+    data class Success(val message: String) : DialogState()
 }
 
-class ScanViewModel : ViewModel() {
+class ScanViewModel(application: Application) : AndroidViewModel(application) {
+
+    // Initialize repository
+    private val repository = ScanRepository(
+        AppDatabase.getDatabase(application).fridgeDao(),
+        AppDatabase.getDatabase(application).shoppingDao(),
+        NetworkModule.apiService
+    )
 
     private val _scannedText = MutableLiveData<String>().apply {
         value = ""
@@ -48,16 +72,12 @@ class ScanViewModel : ViewModel() {
 
     private fun queryProductByBarcode(barcode: String) {
         viewModelScope.launch {
-            // TODO: Implement actual server query
-            // This should make an HTTP request to your API endpoint
-            // Example: GET /api/products/barcode/{barcode}
-
             try {
-                // Simulate server response - replace with actual API call
-                val product = simulateServerResponse(barcode)
+                val ingredient = repository.scanBarcode(barcode)
 
-                if (product != null) {
-                    _dialogState.value = DialogState.ProductFound(product, barcode)
+                if (ingredient != null) {
+                    val product = Product.fromIngredient(ingredient)
+                    _dialogState.value = DialogState.ProductFound(product, barcode, ingredient)
                 } else {
                     _dialogState.value = DialogState.ProductNotFound(barcode)
                 }
@@ -68,40 +88,62 @@ class ScanViewModel : ViewModel() {
         }
     }
 
-    private suspend fun simulateServerResponse(barcode: String): Product? {
-        // TODO: Replace this with actual server query
-        // Example implementation:
-        // val response = apiService.getProductByBarcode(barcode)
-        // return response.product
-
-        // Simulate network delay
-        kotlinx.coroutines.delay(1000)
-
-        // Simulate found/not found based on barcode
-        return if (barcode.length > 10) {
-            Product("1", "Sample Product", "Food")
+    fun onProductConfirmed(product: Product, quantity: Int) {
+        // Find the original ingredient from the dialog state
+        val currentState = _dialogState.value
+        if (currentState is DialogState.ProductFound) {
+            val ingredient = currentState.ingredient
+            
+            viewModelScope.launch {
+                try {
+                    val result = repository.processScannedIngredient(ingredient, quantity)
+                    
+                    if (result.success) {
+                        val message = buildString {
+                            append("✅ Added ${ingredient.name} to fridge!")
+                            if (result.markedInShoppingList) {
+                                append("\n✅ Marked as done in shopping list!")
+                            }
+                        }
+                        _dialogState.value = DialogState.Success(message)
+                    } else {
+                        _dialogState.value = DialogState.ProductNotFound(currentState.barcode)
+                    }
+                } catch (e: Exception) {
+                    _dialogState.value = DialogState.ProductNotFound(currentState.barcode)
+                }
+            }
         } else {
-            null
+            closeDialog()
         }
     }
 
-    fun onProductConfirmed(product: Product, quantity: Int) {
-        // TODO: Add product to owned list and remove from shopping list if present
-        // Example:
-        // - Add to Room database owned_ingredients table
-        // - Remove from shopping_list table if exists
-        // - Update UI state
-
-        closeDialog()
-    }
-
     fun onManualProductSelected(product: Product, quantity: Int) {
-        // TODO: Same as onProductConfirmed but also store barcode mapping
-        // Example:
-        // - Store barcode -> product mapping for future scans
-        // - Add to owned list and remove from shopping list
-
-        closeDialog()
+        // Create ingredient from manually selected product
+        val ingredient = Ingredient(
+            id = product.id.toIntOrNull() ?: 0,
+            name = product.name
+        )
+        
+        viewModelScope.launch {
+            try {
+                val result = repository.processScannedIngredient(ingredient, quantity)
+                
+                if (result.success) {
+                    val message = buildString {
+                        append("✅ Added ${ingredient.name} to fridge!")
+                        if (result.markedInShoppingList) {
+                            append("\n✅ Marked as done in shopping list!")
+                        }
+                    }
+                    _dialogState.value = DialogState.Success(message)
+                } else {
+                    closeDialog()
+                }
+            } catch (e: Exception) {
+                closeDialog()
+            }
+        }
     }
 
     fun closeDialog() {
