@@ -28,7 +28,9 @@ import com.example.homeal_app.R
 
 class CalendarFragment : Fragment() {
 
-    private val calendarViewModel: CalendarViewModel by activityViewModels()
+    private val calendarViewModel: CalendarViewModel by activityViewModels { 
+        androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

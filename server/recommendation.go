@@ -1,10 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
 )

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
-	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,6 +12,7 @@ import (
 const dbPath = "./homeal.db"
 
 func main() {
+	/*
 	go func() {
 		mux1 := http.NewServeMux()
 		fs := http.FileServer(http.Dir("./landing-page"))
@@ -20,6 +21,7 @@ func main() {
 			fmt.Printf("Server landing-page error: %v\n", err)
 		}
 	}()
+		*/
 
 	mux2 := http.NewServeMux()
 
