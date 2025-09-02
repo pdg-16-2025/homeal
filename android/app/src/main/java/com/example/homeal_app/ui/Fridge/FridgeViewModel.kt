@@ -1,6 +1,5 @@
 package com.example.homeal_app.ui.Fridge
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.homeal_app.model.Ingredient
 import com.example.homeal_app.model.FridgeIngredient

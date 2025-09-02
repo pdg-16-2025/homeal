@@ -38,10 +38,14 @@ data class MealSelectionArgs(
 class MealSelectionFragment : Fragment() {
 
     // Shared ViewModel with CalendarFragment
-    private val calendarViewModel: CalendarViewModel by activityViewModels()
+    private val calendarViewModel: CalendarViewModel by activityViewModels { 
+        androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+    }
 
-    // Local ViewModel only for search/recommendations
-    private val mealSelectionViewModel: MealSelectionViewModel by viewModels()
+    // Local ViewModel only for search/recommendations  
+    private val mealSelectionViewModel: MealSelectionViewModel by viewModels { 
+        androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

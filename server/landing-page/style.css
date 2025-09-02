@@ -127,9 +127,11 @@ p {
 /* Header Section */
 .header {
     background: #ffffff;
-    padding: 40px 0 20px;
-    text-align: center;
+    padding: 20px 0;
     border-bottom: 1px solid rgba(75, 0, 130, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .header-container {
@@ -137,15 +139,20 @@ p {
     margin: 0 auto;
     padding: 0 20px;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-brand {
+    display: flex;
     align-items: center;
     gap: 1rem;
 }
 
 .logo {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     transition: all 0.3s ease;
     object-fit: contain;
 }
@@ -154,41 +161,8 @@ p {
     transform: scale(1.05);
 }
 
-.logo-placeholder {
-    width: 80px;
-    height: 80px;
-    background: rgba(75, 0, 130, 0.05);
-    border: 2px dashed #9370DB;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #9370DB;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.logo-placeholder:hover {
-    background: rgba(147, 112, 219, 0.1);
-    border-color: #8A2BE2;
-}
-
-.logo-placeholder i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    opacity: 0.7;
-}
-
-.logo-placeholder p {
-    margin: 0;
-    color: #9370DB;
-    font-size: 0.8rem;
-}
-
 .app-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     color: #4B0082;
     margin: 0;
@@ -502,8 +476,6 @@ p {
     transition: all 0.3s ease;
 }
 
-.custom-card:hover {
-    transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
@@ -528,6 +500,79 @@ p {
 .custom-card p {
     color: #666;
     margin: 0;
+}
+
+/* Team Section */
+.team {
+    padding: 100px 0;
+    background: #f8f4ff;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.team-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(75, 0, 130, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(147, 112, 219, 0.2);
+    text-align: center;
+}
+
+.team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(75, 0, 130, 0.2);
+    border-color: #9370DB;
+}
+
+.team-member-info h3 {
+    color: #4B0082;
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+}
+
+.team-role {
+    color: #9370DB;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.team-bio {
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #4B0082;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: rgba(147, 112, 219, 0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(147, 112, 219, 0.2);
+}
+
+.github-link:hover {
+    color: white;
+    background: #4B0082;
+    border-color: #4B0082;
+    transform: translateY(-1px);
+}
+
+.github-link i {
+    font-size: 1.1rem;
 }
 
 /* CTA Section */
@@ -585,40 +630,40 @@ p {
     .header {
         padding: 30px 0 15px;
     }
-    
+
     .logo {
         width: 60px;
         height: 60px;
     }
-    
+
     .logo-placeholder {
         width: 60px;
         height: 60px;
     }
-    
+
     .logo-placeholder i {
         font-size: 1.5rem;
     }
-    
+
     .app-title {
         font-size: 2rem;
     }
-    
+
     .hero-container {
         grid-template-columns: 1fr;
         text-align: center;
         gap: 2rem;
     }
-    
+
     .hero-buttons {
         justify-content: center;
     }
-    
+
     .mockup-placeholder {
         width: 250px;
         height: 320px;
     }
-    
+
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
@@ -629,50 +674,50 @@ p {
     .header {
         padding: 20px 0 10px;
     }
-    
+
     .logo {
         width: 50px;
         height: 50px;
     }
-    
+
     .logo-placeholder {
         width: 50px;
         height: 50px;
     }
-    
+
     .logo-placeholder i {
         font-size: 1.2rem;
     }
-    
+
     .app-title {
         font-size: 1.8rem;
     }
-    
+
     .hero {
         padding: 30px 0 60px;
         min-height: 70vh;
     }
-    
+
     .hero-buttons {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .btn-primary, .btn-secondary {
         width: 100%;
         max-width: 280px;
         justify-content: center;
     }
-    
+
     .features-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .mockup-placeholder {
         width: 200px;
         height: 260px;
     }
-    
+
     .mockup-placeholder i {
         font-size: 3rem;
     }

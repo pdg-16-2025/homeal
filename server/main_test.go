@@ -50,3 +50,10 @@ func TestHealthCheck(t *testing.T) {
 			status, http.StatusOK)
 	}
 }
+
+// /scan?code=0007200000021
+// /recommendations?type=random&data={}&number=5
+// /recipe?id=210
+// /ingredients?search=tomato
+// /recipe-ingredients?recipe_id=139
+// /search-recipes?search=chicken&limit=5

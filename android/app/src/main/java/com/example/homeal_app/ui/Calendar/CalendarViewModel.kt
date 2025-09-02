@@ -1,8 +1,14 @@
 package com.example.homeal_app.ui.Calendar
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.homeal_app.data.repository.CalendarRepository
+import com.example.homeal_app.data.local.database.AppDatabase
+import com.example.homeal_app.data.remote.NetworkModule
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -17,9 +23,13 @@ data class DayData(
     val dayNumber: String = date.format(DateTimeFormatter.ofPattern("d"))
 }
 
-class CalendarViewModel : ViewModel() {
+class CalendarViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val savedMeals = mutableMapOf<LocalDate, Pair<String, String>>()
+    // Initialize repository with database and API service
+    private val repository = CalendarRepository(
+        AppDatabase.getDatabase(application).plannedMealDao(),
+        NetworkModule.apiService
+    )
 
     private val _weekDays = MutableLiveData<List<DayData>>()
     val weekDays: LiveData<List<DayData>> = _weekDays
@@ -34,16 +44,42 @@ class CalendarViewModel : ViewModel() {
     }
 
     private fun loadCurrentWeek() {
-        val days = (0..6).map { offset ->
-            val date = currentMonday.plusDays(offset.toLong())
-            val meals = savedMeals[date] ?: Pair("", "")
-            DayData(
-                date = date,
-                lunchMeal = meals.first,
-                dinnerMeal = meals.second
-            )
+        viewModelScope.launch {
+            try {
+                val startDate = currentMonday.toString()
+                val endDate = currentMonday.plusDays(6).toString()
+
+                // Get planned meals from database
+                repository.getMealsForWeek(startDate, endDate).collect { plannedMeals ->
+                    val days = (0..6).map { offset ->
+                        val date = currentMonday.plusDays(offset.toLong())
+                        val dateStr = date.toString()
+
+                        val lunchMeal = plannedMeals.find {
+                            it.mealDate == dateStr && it.mealType == "Lunch"
+                        }?.recipeName ?: ""
+
+                        val dinnerMeal = plannedMeals.find {
+                            it.mealDate == dateStr && it.mealType == "Dinner"
+                        }?.recipeName ?: ""
+
+                        DayData(
+                            date = date,
+                            lunchMeal = lunchMeal,
+                            dinnerMeal = dinnerMeal
+                        )
+                    }
+                    _weekDays.value = days
+                }
+            } catch (e: Exception) {
+                // Fallback to empty days on error
+                val days = (0..6).map { offset ->
+                    val date = currentMonday.plusDays(offset.toLong())
+                    DayData(date = date, lunchMeal = "", dinnerMeal = "")
+                }
+                _weekDays.value = days
+            }
         }
-        _weekDays.value = days
 
         val start = currentMonday.format(DateTimeFormatter.ofPattern("MMM d"))
         val end = currentMonday.plusDays(6).format(DateTimeFormatter.ofPattern("MMM d"))
@@ -60,43 +96,45 @@ class CalendarViewModel : ViewModel() {
         loadCurrentWeek()
     }
 
-    // Link recettes choisies et les mettre dans la db
-    //GET recipe Ingredient
-    //Add to shopping list
+    // Updated to save in database
     fun addMeal(date: LocalDate, mealType: String, meal: String) {
-        val existing = savedMeals[date] ?: Pair("", "")
-
-        savedMeals[date] = when (mealType) {
-            "Lunch" -> existing.copy(first = meal)
-            "Dinner" -> existing.copy(second = meal)
-            else -> existing
+        viewModelScope.launch {
+            try {
+                // For now, we use a placeholder recipe ID (0)
+                // TODO: Get actual recipe ID from meal selection
+                repository.addMealToCalendar(
+                    recipeId = 0,
+                    recipeName = meal,
+                    date = date.toString(),
+                    mealType = mealType
+                )
+            } catch (e: Exception) {
+                // Handle error
+            }
         }
-
-        loadCurrentWeek()
     }
+
     fun removeMeal(date: LocalDate, mealType: String) {
-        val existing = savedMeals[date] ?: Pair("", "")
-
-        savedMeals[date] = when (mealType) {
-            "Lunch" -> existing.copy(first = "")
-            "Dinner" -> existing.copy(second = "")
-            else -> existing
+        viewModelScope.launch {
+            try {
+                repository.replaceMeal(
+                    date = date.toString(),
+                    mealType = mealType,
+                    newRecipeId = 0,
+                    newRecipeName = ""
+                )
+            } catch (e: Exception) {
+                // Handle error
+            }
         }
-
-        loadCurrentWeek()
     }
 
     fun getMeal(date: LocalDate, mealType: String): String {
-        val meals = savedMeals[date] ?: return ""
-        return when (mealType) {
-            "Lunch" -> meals.first
-            "Dinner" -> meals.second
-            else -> ""
-        }
+        // This will be handled by the database observation in loadCurrentWeek
+        return ""
     }
 
-    fun cookMeal(){
-
+    fun cookMeal() {
+        // TODO: Implementation when cooking feature is added
     }
-
 }
