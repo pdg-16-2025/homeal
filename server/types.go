@@ -35,6 +35,7 @@ const (
 	RANDOM      RecommendationType = "random"
 	PREFERENCES RecommendationType = "preferences"
 	INGREDIENTS RecommendationType = "ingredients"
+	NUTRIMENTS  RecommendationType = "nutriments"
 )
 
 type Recipe struct {

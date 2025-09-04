@@ -1,9 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
-	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,14 +12,15 @@ import (
 const dbPath = "./homeal.db"
 
 func main() {
-	go func() {
-		mux1 := http.NewServeMux()
-		fs := http.FileServer(http.Dir("./landing-page"))
-		mux1.Handle("/", fs)
-		if err := http.ListenAndServe(":80", mux1); err != nil {
-			fmt.Printf("Server landing-page error: %v\n", err)
-		}
-	}()
+	// Landing page server disabled (would need root for port 80)
+	// go func() {
+	// 	mux1 := http.NewServeMux()
+	// 	fs := http.FileServer(http.Dir("./landing-page"))
+	// 	mux1.Handle("/", fs)
+	// 	if err := http.ListenAndServe(":80", mux1); err != nil {
+	// 		fmt.Printf("Server landing-page error: %v\n", err)
+	// 	}
+	// }()
 
 	mux2 := http.NewServeMux()
 

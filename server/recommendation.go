@@ -1,12 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"database/sql"
-
-	_ "github.com/mattn/go-sqlite3"
+	"os/exec"
+	"strconv"
 )
 
 func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) {
@@ -16,11 +14,16 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// TODO: Implement data json structure parsing based on recoType
+	// Get data parameter (optional for RANDOM type)
 	data := r.URL.Query().Get("data")
 	if data == "" {
-		http.Error(w, "Missing 'data' parameter", http.StatusBadRequest)
-		return
+		if recoType == RANDOM {
+			// For random recommendations, provide empty JSON object
+			data = "{}"
+		} else {
+			http.Error(w, "Missing 'data' parameter", http.StatusBadRequest)
+			return
+		}
 	}
 
 	number := 5
@@ -30,46 +33,54 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 
 	switch recoType {
 	case RANDOM:
-		rows, err := h.db.Query("SELECT id, name, total_time, images FROM Recipe ORDER BY RANDOM() LIMIT ?", number)
+		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "random", data, strconv.Itoa(number))
+		cmd.Dir = "." // Set working directory to server root
+		output, err := cmd.Output()
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Database query error: %v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Random recommendation error: %v", err), http.StatusInternalServerError)
 			return
-		}
-		defer rows.Close()
-		recommendations := []ShortRecipe{}
-		for rows.Next() {
-			var recipe ShortRecipe
-			var totalTime sql.NullInt64
-			var imageURL sql.NullString
-			if err := rows.Scan(&recipe.Id, &recipe.Name, &totalTime, &imageURL); err != nil {
-				http.Error(w, fmt.Sprintf("Row scan error: %v", err), http.StatusInternalServerError)
-				return
-			}
-			if totalTime.Valid {
-				recipe.TotalTime = int(totalTime.Int64)
-			} else {
-				recipe.TotalTime = 0
-			}
-			if imageURL.Valid {
-				recipe.ImageURL = imageURL.String
-			} else {
-				recipe.ImageURL = ""
-			}
-			recommendations = append(recommendations, recipe)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(recommendations); err != nil {
-			http.Error(w, fmt.Sprintf("JSON encoding error: %v", err), http.StatusInternalServerError)
+		w.Write(output)
+
+	case INGREDIENTS:
+		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "ingredients", data, strconv.Itoa(number))
+		cmd.Dir = "." // Set working directory to server root
+		output, err := cmd.Output()
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Ingredients recommendation error: %v", err), http.StatusInternalServerError)
 			return
 		}
 
-	// TODO: Not implemented yet
-	case PREFERENCES:
-		http.Error(w, "Recommendation type 'preferences' not implemented yet", http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
 
-	// TODO: Not implemented yet
-	case INGREDIENTS:
-		http.Error(w, "Recommendation type 'ingredients' not implemented yet", http.StatusNotImplemented)
+	case NUTRIMENTS:
+		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "nutriments", data, strconv.Itoa(number))
+		cmd.Dir = "." // Set working directory to server root
+		output, err := cmd.Output()
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Nutriments recommendation error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+
+	case PREFERENCES:
+		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "preferences", data, strconv.Itoa(number))
+		cmd.Dir = "." // Set working directory to server root
+		output, err := cmd.Output()
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Preferences recommendation error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+
+	default:
+		http.Error(w, fmt.Sprintf("Unknown recommendation type: %s", recoType), http.StatusBadRequest)
 	}
 }
