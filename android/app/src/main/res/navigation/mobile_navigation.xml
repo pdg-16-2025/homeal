@@ -20,6 +20,10 @@
     <action
         android:id="@+id/action_calendar_to_meal_selection"
         app:destination="@id/navigation_meal_selection" />
+
+    <action
+        android:id="@+id/action_calendar_to_recipe_details"
+        app:destination="@id/navigation_recipe_details" />
     </fragment>
 
     <fragment
@@ -27,6 +31,17 @@
     android:name="com.example.homeal_app.ui.Calendar.MealSelectionFragment"
     android:label="Meal Selection"
     tools:layout="@layout/fragment_meal_selection" />
+
+    <fragment
+        android:id="@+id/navigation_recipe_details"
+        android:name="com.example.homeal_app.ui.Calendar.RecipeDetailsFragment"
+        android:label="Recipe Details"
+        tools:layout="@layout/fragment_recipe_details">
+        <argument
+            android:name="recipeId"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_shopping"

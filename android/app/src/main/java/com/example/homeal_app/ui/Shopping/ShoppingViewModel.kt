@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.homeal_app.data.repository.ShoppingRepository
+import com.example.homeal_app.data.repository.CalendarRepository
+import com.example.homeal_app.data.repository.FridgeRepository
 import com.example.homeal_app.data.local.database.AppDatabase
 import com.example.homeal_app.data.remote.NetworkModule
 import com.example.homeal_app.model.ShoppingIngredient
@@ -16,9 +18,21 @@ import kotlinx.coroutines.launch
 class ShoppingViewModel(application: Application) : AndroidViewModel(application) {
 
     // Initialize repository
+    private val calendarRepository = CalendarRepository(
+        AppDatabase.getDatabase(application).plannedMealDao(),
+        NetworkModule.apiService
+    )
+
+    private val fridgeRepository = FridgeRepository(
+        AppDatabase.getDatabase(application).fridgeDao(),
+        NetworkModule.apiService
+    )
+
     private val repository = ShoppingRepository(
         AppDatabase.getDatabase(application).shoppingDao(),
-        NetworkModule.apiService
+        NetworkModule.apiService,
+        calendarRepository,
+        fridgeRepository
     )
 
     // Shopping list from database
@@ -31,6 +45,13 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
 
     private val _availableIngredients = MutableLiveData<List<Ingredient>>()
     val availableIngredients: LiveData<List<Ingredient>> = _availableIngredients
+
+    // Generation state
+    private val _isGenerating = MutableLiveData<Boolean>()
+    val isGenerating: LiveData<Boolean> = _isGenerating
+
+    private val _generationError = MutableLiveData<String?>()
+    val generationError: LiveData<String?> = _generationError
 
     /**
      * Update search query and fetch suggestions from server
@@ -118,5 +139,31 @@ class ShoppingViewModel(application: Application) : AndroidViewModel(application
                 // Handle error
             }
         }
+    }
+
+    /**
+     * Generate shopping list from planned meals for the next X days
+     */
+    fun generateShoppingListFromPlannedMeals(numberOfDays: Int) {
+        viewModelScope.launch {
+            _isGenerating.value = true
+            _generationError.value = null
+
+            try {
+                repository.generateShoppingListFromPlannedMeals(numberOfDays)
+            } catch (e: Exception) {
+                _generationError.value = "Failed to generate shopping list: ${e.message}"
+                android.util.Log.e("ShoppingViewModel", "Error generating shopping list", e)
+            } finally {
+                _isGenerating.value = false
+            }
+        }
+    }
+
+    /**
+     * Clear generation error
+     */
+    fun clearGenerationError() {
+        _generationError.value = null
     }
 }

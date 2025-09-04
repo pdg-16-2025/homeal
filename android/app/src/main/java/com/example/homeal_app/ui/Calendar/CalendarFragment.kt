@@ -44,6 +44,9 @@ class CalendarFragment : Fragment() {
                         viewModel = calendarViewModel,
                         onMealClick = { date, mealType ->
                             navigateToMealSelection(date, mealType)
+                        },
+                        onRecipeDetailsClick = { recipeId ->
+                            navigateToRecipeDetails(recipeId)
                         }
                     )
                 }
@@ -58,15 +61,22 @@ class CalendarFragment : Fragment() {
         }
 
         findNavController().navigate(R.id.navigation_meal_selection, bundle)
+    }
 
+    private fun navigateToRecipeDetails(recipeId: Int) {
+        val bundle = Bundle().apply {
+            putInt("recipeId", recipeId)
+        }
 
+        findNavController().navigate(R.id.navigation_recipe_details, bundle)
     }
 }
 
 @Composable
 fun CalendarScreen(
     viewModel: CalendarViewModel,
-    onMealClick: (LocalDate, String) -> Unit
+    onMealClick: (LocalDate, String) -> Unit,
+    onRecipeDetailsClick: (Int) -> Unit
 ) {
     val weekDays by viewModel.weekDays.observeAsState(emptyList())
     val weekTitle by viewModel.currentWeekTitle.observeAsState("")
@@ -107,6 +117,9 @@ fun CalendarScreen(
                     onMealClick = { mealType ->
                         onMealClick(day.date, mealType)
                     },
+                    onMealViewDetails = { mealType, recipeId ->
+                        onRecipeDetailsClick(recipeId)
+                    },
                     onMealRemove = { mealType ->
                         viewModel.removeMeal(day.date, mealType)
                     }
@@ -121,6 +134,7 @@ fun CalendarScreen(
 fun DayCard(
     day: DayData,
     onMealClick: (String) -> Unit,
+    onMealViewDetails: (String, Int) -> Unit,
     onMealRemove: (String) -> Unit
 ) {
     Card(
@@ -153,14 +167,18 @@ fun DayCard(
             MealSlot(
                 label = "Lunch",
                 meal = day.lunchMeal,
-                onClick = { onMealClick("Lunch") },
+                recipeId = day.lunchRecipeId,
+                onEmptyClick = { onMealClick("Lunch") },
+                onFilledClick = { onMealViewDetails("Lunch", day.lunchRecipeId) },
                 onRemove = { onMealRemove("Lunch") }
             )
             Spacer(modifier = Modifier.height(8.dp))
             MealSlot(
                 label = "Dinner",
                 meal = day.dinnerMeal,
-                onClick = { onMealClick("Dinner") },
+                recipeId = day.dinnerRecipeId,
+                onEmptyClick = { onMealClick("Dinner") },
+                onFilledClick = { onMealViewDetails("Dinner", day.dinnerRecipeId) },
                 onRemove = { onMealRemove("Dinner") }
             )
         }
@@ -171,13 +189,21 @@ fun DayCard(
 fun MealSlot(
     label: String,
     meal: String,
-    onClick: () -> Unit,
+    recipeId: Int,
+    onEmptyClick: () -> Unit,
+    onFilledClick: () -> Unit,
     onRemove: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable {
+                if (meal.isEmpty()) {
+                    onEmptyClick()
+                } else {
+                    onFilledClick()
+                }
+            },
         colors = CardDefaults.cardColors(
             containerColor = if (meal.isEmpty())
                 MaterialTheme.colorScheme.surfaceVariant

@@ -58,4 +58,10 @@ interface ShoppingDao {
      */
     @Query("SELECT * FROM shopping_ingredients WHERE name = :name LIMIT 1")
     suspend fun getShoppingIngredientByName(name: String): ShoppingIngredient?
+
+    /**
+     * Get all marked (done) ingredients before removing them
+     */
+    @Query("SELECT * FROM shopping_ingredients WHERE isDone = 1")
+    suspend fun getMarkedIngredients(): List<ShoppingIngredient>
 }

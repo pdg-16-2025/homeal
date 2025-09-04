@@ -38,12 +38,12 @@ data class MealSelectionArgs(
 class MealSelectionFragment : Fragment() {
 
     // Shared ViewModel with CalendarFragment
-    private val calendarViewModel: CalendarViewModel by activityViewModels { 
+    private val calendarViewModel: CalendarViewModel by activityViewModels {
         androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
     }
 
-    // Local ViewModel only for search/recommendations  
-    private val mealSelectionViewModel: MealSelectionViewModel by viewModels { 
+    // Local ViewModel only for search/recommendations
+    private val mealSelectionViewModel: MealSelectionViewModel by viewModels {
         androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
     }
 
@@ -67,8 +67,9 @@ class MealSelectionFragment : Fragment() {
                         args = args,
                         calendarViewModel = calendarViewModel,
                         mealSelectionViewModel = mealSelectionViewModel,
-                        onMealSelected = { meal ->
-                            calendarViewModel.addMeal(args.date, args.mealType, meal)
+                        onMealSelected = { mealData ->
+                            android.util.Log.d("MealSelectionFragment", "onMealSelected called with meal: ${mealData.name} (ID: ${mealData.id})")
+                            calendarViewModel.addMeal(args.date, args.mealType, mealData.id, mealData.name)
                             findNavController().popBackStack()
                         },
                         onBackPressed = {
@@ -87,7 +88,7 @@ fun MealSelectionScreen(
     args: MealSelectionArgs,
     calendarViewModel: CalendarViewModel,
     mealSelectionViewModel: MealSelectionViewModel,
-    onMealSelected: (String) -> Unit,
+    onMealSelected: (MealData) -> Unit,
     onBackPressed: () -> Unit
 ) {
     val searchQuery by mealSelectionViewModel.searchQuery.observeAsState("")
@@ -163,7 +164,7 @@ fun MealSelectionScreen(
                     MealItem(
                         meal = meal,
                         isRecommended = true,
-                        onClick = { onMealSelected(meal.name) }
+                        onClick = { onMealSelected(meal) }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -206,7 +207,7 @@ fun MealSelectionScreen(
                 MealItem(
                     meal = meal,
                     isRecommended = false,
-                    onClick = { onMealSelected(meal.name) }
+                    onClick = { onMealSelected(meal) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }

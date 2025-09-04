@@ -6,6 +6,7 @@ import com.example.homeal_app.data.remote.ApiService
 import com.example.homeal_app.model.PlannedMeal
 import com.example.homeal_app.model.Recipe
 import com.example.homeal_app.model.RecipeDetails
+import com.example.homeal_app.model.RecipeIngredient
 import kotlinx.coroutines.flow.Flow
 import android.util.Log
 
@@ -41,13 +42,16 @@ class CalendarRepository(
         date: String,
         mealType: String
     ) {
+        Log.d("CalendarRepository", "addMealToCalendar called: recipeId=$recipeId, recipeName=$recipeName, date=$date, mealType=$mealType")
         val plannedMeal = PlannedMeal(
             recipeId = recipeId,
             recipeName = recipeName,
             mealDate = date,
             mealType = mealType
         )
+        Log.d("CalendarRepository", "About to insert planned meal into database: $plannedMeal")
         plannedMealDao.addPlannedMeal(plannedMeal)
+        Log.d("CalendarRepository", "Successfully inserted planned meal into database")
     }
     
     /**
@@ -58,6 +62,15 @@ class CalendarRepository(
     }
     
     /**
+     * Remove a meal by date and type (proper deletion)
+     */
+    suspend fun removeMealByDateAndType(date: String, mealType: String) {
+        Log.d("CalendarRepository", "removeMealByDateAndType called: date=$date, mealType=$mealType")
+        plannedMealDao.removeMealByDateAndType(date, mealType)
+        Log.d("CalendarRepository", "Successfully removed meal by date and type")
+    }
+
+    /**
      * Replace a meal for a specific date and type
      */
     suspend fun replaceMeal(
@@ -66,8 +79,13 @@ class CalendarRepository(
         newRecipeId: Int,
         newRecipeName: String
     ) {
+        Log.d("CalendarRepository", "replaceMeal called: date=$date, mealType=$mealType, newRecipeId=$newRecipeId, newRecipeName='$newRecipeName'")
+        Log.d("CalendarRepository", "About to remove meal by date and type")
         plannedMealDao.removeMealByDateAndType(date, mealType)
+        Log.d("CalendarRepository", "Successfully removed existing meal")
+        Log.d("CalendarRepository", "About to add new meal")
         addMealToCalendar(newRecipeId, newRecipeName, date, mealType)
+        Log.d("CalendarRepository", "Successfully added replacement meal")
     }
     
     /**
@@ -111,6 +129,32 @@ class CalendarRepository(
             )
         } catch (e: Exception) {
             Log.e("CalendarRepository", "Error fetching recommendations", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Get recipe ingredients with names from the recipe-ingredients endpoint
+     * This endpoint returns ingredients with their names, quantities, and units
+     */
+    suspend fun getRecipeIngredients(recipeId: Int): List<RecipeIngredient> {
+        return try {
+            apiService.getRecipeIngredients(recipeId)
+        } catch (e: Exception) {
+            Log.e("CalendarRepository", "Error fetching recipe ingredients for recipe: $recipeId", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Get planned meals for a date range for shopping list generation
+     * Returns a simple list rather than Flow for one-time operations
+     */
+    suspend fun getPlannedMealsForDateRange(startDate: String, endDate: String): List<PlannedMeal> {
+        return try {
+            plannedMealDao.getMealsForWeekSync(startDate, endDate)
+        } catch (e: Exception) {
+            Log.e("CalendarRepository", "Error fetching planned meals for date range", e)
             emptyList()
         }
     }
