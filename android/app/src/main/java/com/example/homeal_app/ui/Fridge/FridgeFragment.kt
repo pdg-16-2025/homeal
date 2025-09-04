@@ -139,7 +139,7 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
             ) {
                 items(
                     items = ingredients,
-                    key = { it.name }
+                    key = { it.id }
                 ) { ingredient ->
                     Column {
                         IngredientItem(

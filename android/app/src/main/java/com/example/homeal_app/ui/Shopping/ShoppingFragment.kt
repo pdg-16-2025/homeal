@@ -125,7 +125,10 @@ fun ShoppingScreen(viewModel: ShoppingViewModel) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(ingredients) { ingredient ->
+            items(
+                items = ingredients,
+                key = {it.id}
+                ) { ingredient ->
                 IngredientItem(
                     ingredient = ingredient,
                     onToggleDone = { viewModel.toggleIngredientDone(ingredient.id) },
