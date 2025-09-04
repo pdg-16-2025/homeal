@@ -1,9 +1,14 @@
 package com.example.homeal_app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class RecipeIngredient(
+    @SerializedName("id")
     val id: Int,
-    val recipe_id: Int,
-    val ingredient_id: Int,
-    val quantity: Double,
-    val unit: String
+    @SerializedName("name")
+    val name: String = "",
+    @SerializedName("quantity")
+    val quantity: String = "1",
+    @SerializedName("unit")
+    val unit: String = ""
 )

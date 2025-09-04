@@ -17,7 +17,9 @@ import java.util.Locale
 data class DayData(
     val date: LocalDate,
     val lunchMeal: String,
-    val dinnerMeal: String
+    val dinnerMeal: String,
+    val lunchRecipeId: Int = 0,
+    val dinnerRecipeId: Int = 0
 ) {
     val dayName: String = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
     val dayNumber: String = date.format(DateTimeFormatter.ofPattern("d"))
@@ -44,34 +46,51 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun loadCurrentWeek() {
+        android.util.Log.d("CalendarViewModel", "loadCurrentWeek called for week starting: $currentMonday")
         viewModelScope.launch {
             try {
                 val startDate = currentMonday.toString()
                 val endDate = currentMonday.plusDays(6).toString()
+                android.util.Log.d("CalendarViewModel", "Loading meals for week: $startDate to $endDate")
 
                 // Get planned meals from database
                 repository.getMealsForWeek(startDate, endDate).collect { plannedMeals ->
+                    android.util.Log.d("CalendarViewModel", "Received ${plannedMeals.size} planned meals from database:")
+                    plannedMeals.forEach { meal ->
+                        android.util.Log.d("CalendarViewModel", "  - ${meal.mealDate} ${meal.mealType}: ${meal.recipeName} (ID: ${meal.recipeId})")
+                    }
+
                     val days = (0..6).map { offset ->
                         val date = currentMonday.plusDays(offset.toLong())
                         val dateStr = date.toString()
 
-                        val lunchMeal = plannedMeals.find {
+                        val lunchMealData = plannedMeals.find {
                             it.mealDate == dateStr && it.mealType == "Lunch"
-                        }?.recipeName ?: ""
+                        }
+                        val lunchMeal = lunchMealData?.recipeName ?: ""
+                        val lunchRecipeId = lunchMealData?.recipeId ?: 0
 
-                        val dinnerMeal = plannedMeals.find {
+                        val dinnerMealData = plannedMeals.find {
                             it.mealDate == dateStr && it.mealType == "Dinner"
-                        }?.recipeName ?: ""
+                        }
+                        val dinnerMeal = dinnerMealData?.recipeName ?: ""
+                        val dinnerRecipeId = dinnerMealData?.recipeId ?: 0
+
+                        android.util.Log.d("CalendarViewModel", "Day $dateStr: Lunch='$lunchMeal' (ID: $lunchRecipeId), Dinner='$dinnerMeal' (ID: $dinnerRecipeId)")
 
                         DayData(
                             date = date,
                             lunchMeal = lunchMeal,
-                            dinnerMeal = dinnerMeal
+                            dinnerMeal = dinnerMeal,
+                            lunchRecipeId = lunchRecipeId,
+                            dinnerRecipeId = dinnerRecipeId
                         )
                     }
                     _weekDays.value = days
+                    android.util.Log.d("CalendarViewModel", "Updated weekDays with ${days.size} days")
                 }
             } catch (e: Exception) {
+                android.util.Log.e("CalendarViewModel", "Error loading current week: ${e.message}", e)
                 // Fallback to empty days on error
                 val days = (0..6).map { offset ->
                     val date = currentMonday.plusDays(offset.toLong())
@@ -96,35 +115,37 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
         loadCurrentWeek()
     }
 
-    // Updated to save in database
-    fun addMeal(date: LocalDate, mealType: String, meal: String) {
+    // Updated to save in database with actual recipe ID
+    fun addMeal(date: LocalDate, mealType: String, recipeId: Int, recipeName: String) {
+        android.util.Log.d("CalendarViewModel", "addMeal called: date=$date, mealType=$mealType, recipeId=$recipeId, recipeName=$recipeName")
         viewModelScope.launch {
             try {
-                // For now, we use a placeholder recipe ID (0)
-                // TODO: Get actual recipe ID from meal selection
+                android.util.Log.d("CalendarViewModel", "About to call repository.addMealToCalendar with recipeId=$recipeId")
                 repository.addMealToCalendar(
-                    recipeId = 0,
-                    recipeName = meal,
+                    recipeId = recipeId,
+                    recipeName = recipeName,
                     date = date.toString(),
                     mealType = mealType
                 )
+                android.util.Log.d("CalendarViewModel", "Successfully added meal to repository")
             } catch (e: Exception) {
-                // Handle error
+                android.util.Log.e("CalendarViewModel", "Error adding meal: ${e.message}", e)
             }
         }
     }
 
     fun removeMeal(date: LocalDate, mealType: String) {
+        android.util.Log.d("CalendarViewModel", "removeMeal called: date=$date, mealType=$mealType")
         viewModelScope.launch {
             try {
-                repository.replaceMeal(
+                android.util.Log.d("CalendarViewModel", "About to call repository.removeMealByDateAndType for proper deletion")
+                repository.removeMealByDateAndType(
                     date = date.toString(),
-                    mealType = mealType,
-                    newRecipeId = 0,
-                    newRecipeName = ""
+                    mealType = mealType
                 )
+                android.util.Log.d("CalendarViewModel", "Successfully removed meal from repository")
             } catch (e: Exception) {
-                // Handle error
+                android.util.Log.e("CalendarViewModel", "Error removing meal: ${e.message}", e)
             }
         }
     }
