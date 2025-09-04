@@ -1,0 +1,31 @@
+-- SQLite
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS OwnedIngredient (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL,
+	quantity REAL NOT NULL,
+	unit TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ShoppingList (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL,
+	instructions TEXT,
+	unit TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ShoppingListIngredient (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	shopping_list_id INTEGER NOT NULL,
+	ingredient_name TEXT NOT NULL,
+	quantity REAL NOT NULL,
+	FOREIGN KEY (shopping_list_id) REFERENCES ShoppingList(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS PlannedMeal (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	recipe_id INTEGER NOT NULL,
+	name TEXT NOT NULL,
+	meal_date DATE NOT NULL,
+);
