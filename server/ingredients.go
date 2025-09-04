@@ -19,6 +19,9 @@ func (h *Handler) handleIngredients(w http.ResponseWriter, r *http.Request) {
 	if limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
 			limit = l
+		} else {
+			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+			return
 		}
 	}
 
