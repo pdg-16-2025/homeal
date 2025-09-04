@@ -71,6 +71,8 @@ fun RecipeDetailsScreen(
     val recipeIngredients by viewModel.recipeIngredients.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
+    val isMarkingCooked by viewModel.isMarkingCooked.observeAsState(false)
+    val cookedSuccess by viewModel.cookedSuccess.observeAsState()
 
     // Load recipe details when composable is first created
     LaunchedEffect(recipeId) {
@@ -154,7 +156,9 @@ fun RecipeDetailsScreen(
             recipeDetails != null -> {
                 RecipeDetailsContent(
                     recipe = recipeDetails!!,
-                    recipeIngredients = recipeIngredients
+                    recipeIngredients = recipeIngredients,
+                    viewModel = viewModel,
+                    isMarkingCooked = isMarkingCooked
                 )
             }
 
@@ -170,7 +174,12 @@ fun RecipeDetailsScreen(
 }
 
 @Composable
-fun RecipeDetailsContent(recipe: RecipeDetails, recipeIngredients: List<com.example.homeal_app.model.RecipeIngredient>) {
+fun RecipeDetailsContent(
+    recipe: RecipeDetails,
+    recipeIngredients: List<com.example.homeal_app.model.RecipeIngredient>,
+    viewModel: RecipeDetailsViewModel,
+    isMarkingCooked: Boolean
+) {
     LazyColumn {
         item {
             // Recipe header
@@ -196,15 +205,18 @@ fun RecipeDetailsContent(recipe: RecipeDetails, recipeIngredients: List<com.exam
                     ) {
                         RecipeStatChip(
                             icon = Icons.Default.PlayArrow,
-                            label = "${recipe.totalTime} min",
+                            label = if (recipe.totalTime == -1) "N/A" else "${recipe.totalTime} min",
                             description = "Total Time"
                         )
 
-                        RecipeStatChip(
-                            icon = Icons.Default.Person,
-                            label = "${recipe.servings}",
-                            description = "Servings"
-                        )
+                        // Only show servings if > 0 or == -1, show "N/A" if -1
+                        if (recipe.servings > 0 || recipe.servings == -1) {
+                            RecipeStatChip(
+                                icon = Icons.Default.Person,
+                                label = if (recipe.servings == -1) "N/A" else "${recipe.servings}",
+                                description = "Servings"
+                            )
+                        }
 
                         if (recipe.rating > 0) {
                             RecipeStatChip(
@@ -358,6 +370,58 @@ fun RecipeDetailsContent(recipe: RecipeDetails, recipeIngredients: List<com.exam
                             style = MaterialTheme.typography.bodyMedium,
                             lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
                         )
+                    }
+                }
+            }
+        }
+
+        // Mark as Cooked Button
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Finished cooking?",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Mark this recipe as cooked to remove ingredients from your fridge",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = {
+                            viewModel.markRecipeAsCooked()
+                        },
+                        enabled = !isMarkingCooked,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (isMarkingCooked) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Marking as Cooked...")
+                        } else {
+                            Text("Mark as Cooked")
+                        }
                     }
                 }
             }

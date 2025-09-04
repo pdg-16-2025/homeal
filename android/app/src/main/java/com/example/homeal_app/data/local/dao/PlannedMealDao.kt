@@ -23,6 +23,12 @@ interface PlannedMealDao {
      */
     @Query("SELECT * FROM planned_meals WHERE meal_date BETWEEN :startDate AND :endDate ORDER BY meal_date, mealType")
     fun getMealsForWeek(startDate: String, endDate: String): Flow<List<PlannedMeal>>
+
+    /**
+     * Get all planned meals for the current week (synchronous for one-time operations)
+     */
+    @Query("SELECT * FROM planned_meals WHERE meal_date BETWEEN :startDate AND :endDate ORDER BY meal_date, mealType")
+    suspend fun getMealsForWeekSync(startDate: String, endDate: String): List<PlannedMeal>
     
     /**
      * Add a planned meal to the calendar

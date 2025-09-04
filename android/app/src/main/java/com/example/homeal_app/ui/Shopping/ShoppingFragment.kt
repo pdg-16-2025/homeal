@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -51,7 +52,11 @@ fun ShoppingScreen(viewModel: ShoppingViewModel) {
     val ingredients by viewModel.ingredients.observeAsState(emptyList())
     val searchQuery by viewModel.searchQuery.observeAsState("")
     val availableIngredients by viewModel.availableIngredients.observeAsState(emptyList())
+    val isGenerating by viewModel.isGenerating.observeAsState(false)
+    val generationError by viewModel.generationError.observeAsState()
+
     var showAddDialog by remember { mutableStateOf(false) }
+    var showGenerationDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -85,11 +90,16 @@ fun ShoppingScreen(viewModel: ShoppingViewModel) {
                     }
                 }
 
+                // Generate shopping list button
                 FloatingActionButton(
-                    onClick = { showAddDialog = true },
-                    modifier = Modifier.size(56.dp)
+                    onClick = { showGenerationDialog = true },
+                    modifier = Modifier.size(56.dp),
+                    containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add ingredient")
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        contentDescription = "Generate shopping list from planned meals"
+                    )
                 }
             }
         }
@@ -134,6 +144,27 @@ fun ShoppingScreen(viewModel: ShoppingViewModel) {
                 showAddDialog = false
             }
         )
+    }
+
+    // Generate shopping list dialog
+    if (showGenerationDialog) {
+        GenerateShoppingListDialog(
+            isLoading = isGenerating,
+            onDismiss = { showGenerationDialog = false },
+            onGenerate = { numberOfDays ->
+                viewModel.generateShoppingListFromPlannedMeals(numberOfDays)
+                showGenerationDialog = false
+            }
+        )
+    }
+
+    // Show error message if generation failed
+    generationError?.let { error ->
+        LaunchedEffect(error) {
+            // You might want to show a Snackbar here
+            android.util.Log.e("ShoppingScreen", "Generation error: $error")
+            viewModel.clearGenerationError()
+        }
     }
 }
 
@@ -232,6 +263,79 @@ fun AddIngredientDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun GenerateShoppingListDialog(
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onGenerate: (Int) -> Unit
+) {
+    var numberOfDaysStr by remember { mutableStateOf("7") }
+    val numberOfDays = numberOfDaysStr.toIntOrNull() ?: 7
+
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        title = { Text("Generate Shopping List") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Generate a shopping list from your planned meals for the next few days.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                OutlinedTextField(
+                    value = numberOfDaysStr,
+                    onValueChange = { numberOfDaysStr = it },
+                    label = { Text("Number of days") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading
+                )
+
+                Text(
+                    text = "This will add ingredients from your planned recipes to your shopping list. Items already in your list won't be duplicated.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (isLoading) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        Text(
+                            text = "Generating shopping list...",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (numberOfDays > 0) {
+                        onGenerate(numberOfDays)
+                    }
+                },
+                enabled = !isLoading && numberOfDays > 0
+            ) {
+                Text("Generate")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
                 Text("Cancel")
             }
         }

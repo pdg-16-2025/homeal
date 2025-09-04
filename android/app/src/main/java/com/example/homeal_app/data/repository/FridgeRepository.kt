@@ -165,4 +165,26 @@ class FridgeRepository(
             0
         }
     }
+
+    /**
+     * Remove recipe ingredients from fridge when recipe is cooked
+     * Ignores ingredients that are not found in the fridge
+     */
+    suspend fun removeRecipeIngredients(recipeIngredients: List<com.example.homeal_app.model.RecipeIngredient>) {
+        try {
+            for (ingredient in recipeIngredients) {
+                val fridgeIngredient = fridgeDao.getIngredientByName(ingredient.name)
+                if (fridgeIngredient != null) {
+                    // Remove the ingredient from fridge
+                    fridgeDao.removeIngredient(fridgeIngredient)
+                    Log.d("FridgeRepository", "Removed ingredient from fridge: ${ingredient.name}")
+                } else {
+                    Log.d("FridgeRepository", "Ingredient not found in fridge, skipping: ${ingredient.name}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FridgeRepository", "Error removing recipe ingredients from fridge", e)
+            throw e
+        }
+    }
 }

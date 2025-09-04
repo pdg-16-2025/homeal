@@ -145,4 +145,17 @@ class CalendarRepository(
             emptyList()
         }
     }
+
+    /**
+     * Get planned meals for a date range for shopping list generation
+     * Returns a simple list rather than Flow for one-time operations
+     */
+    suspend fun getPlannedMealsForDateRange(startDate: String, endDate: String): List<PlannedMeal> {
+        return try {
+            plannedMealDao.getMealsForWeekSync(startDate, endDate)
+        } catch (e: Exception) {
+            Log.e("CalendarRepository", "Error fetching planned meals for date range", e)
+            emptyList()
+        }
+    }
 }

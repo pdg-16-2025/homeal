@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.homeal_app.data.repository.CalendarRepository
+import com.example.homeal_app.data.repository.FridgeRepository
 import com.example.homeal_app.data.local.database.AppDatabase
 import com.example.homeal_app.data.remote.NetworkModule
 import com.example.homeal_app.model.RecipeDetails
@@ -13,9 +14,14 @@ import kotlinx.coroutines.launch
 
 class RecipeDetailsViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Initialize repository
+    // Initialize repositories
     private val repository = CalendarRepository(
         AppDatabase.getDatabase(application).plannedMealDao(),
+        NetworkModule.apiService
+    )
+
+    private val fridgeRepository = FridgeRepository(
+        AppDatabase.getDatabase(application).fridgeDao(),
         NetworkModule.apiService
     )
 
@@ -30,6 +36,12 @@ class RecipeDetailsViewModel(application: Application) : AndroidViewModel(applic
 
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
+
+    private val _isMarkingCooked = MutableLiveData<Boolean>()
+    val isMarkingCooked: LiveData<Boolean> = _isMarkingCooked
+
+    private val _cookedSuccess = MutableLiveData<Boolean?>()
+    val cookedSuccess: LiveData<Boolean?> = _cookedSuccess
 
     fun loadRecipeDetails(recipeId: Int) {
         android.util.Log.d("RecipeDetailsViewModel", "loadRecipeDetails called with recipeId: $recipeId")
@@ -66,6 +78,41 @@ class RecipeDetailsViewModel(application: Application) : AndroidViewModel(applic
 
     fun clearError() {
         _error.value = null
+    }
+
+    /**
+     * Mark recipe as cooked and remove ingredients from fridge
+     */
+    fun markRecipeAsCooked() {
+        viewModelScope.launch {
+            _isMarkingCooked.value = true
+            _cookedSuccess.value = null
+
+            try {
+                val ingredients = _recipeIngredients.value
+                if (!ingredients.isNullOrEmpty()) {
+                    // Remove recipe ingredients from fridge
+                    fridgeRepository.removeRecipeIngredients(ingredients)
+                    _cookedSuccess.value = true
+                    android.util.Log.d("RecipeDetailsViewModel", "Successfully marked recipe as cooked and removed ingredients from fridge")
+                } else {
+                    _cookedSuccess.value = true
+                    android.util.Log.d("RecipeDetailsViewModel", "No ingredients to remove from fridge")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("RecipeDetailsViewModel", "Error marking recipe as cooked: ${e.message}", e)
+                _cookedSuccess.value = false
+            } finally {
+                _isMarkingCooked.value = false
+            }
+        }
+    }
+
+    /**
+     * Clear cooked success status
+     */
+    fun clearCookedSuccess() {
+        _cookedSuccess.value = null
     }
 }
 
