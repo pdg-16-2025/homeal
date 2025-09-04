@@ -12,8 +12,7 @@ import java.util.concurrent.TimeUnit
 object NetworkModule {
     
     // Base URL for the Homeal server
-    // TODO: This URL may change in the future, update accordingly
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "http://138.199.171.173:3000//"
     
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
