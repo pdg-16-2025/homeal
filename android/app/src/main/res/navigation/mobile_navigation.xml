@@ -3,23 +3,62 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_fridge">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.homeal_app.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_fridge"
+        android:name="com.example.homeal_app.ui.Fridge.FridgeFragment"
+        android:label="@string/title_fridge"
+        tools:layout="@layout/fragment_fridge" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.homeal_app.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_calendar"
+        android:name="com.example.homeal_app.ui.Calendar.CalendarFragment"
+        android:label="@string/title_calendar"
+        tools:layout="@layout/fragment_calendar">
+
+    <action
+        android:id="@+id/action_calendar_to_meal_selection"
+        app:destination="@id/navigation_meal_selection" />
+
+    <action
+        android:id="@+id/action_calendar_to_recipe_details"
+        app:destination="@id/navigation_recipe_details" />
+    </fragment>
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.homeal_app.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+    android:id="@+id/navigation_meal_selection"
+    android:name="com.example.homeal_app.ui.Calendar.MealSelectionFragment"
+    android:label="Meal Selection"
+    tools:layout="@layout/fragment_meal_selection" />
+
+    <fragment
+        android:id="@+id/navigation_recipe_details"
+        android:name="com.example.homeal_app.ui.Calendar.RecipeDetailsFragment"
+        android:label="Recipe Details"
+        tools:layout="@layout/fragment_recipe_details">
+        <argument
+            android:name="recipeId"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_shopping"
+        android:name="com.example.homeal_app.ui.Shopping.ShoppingFragment"
+        android:label="@string/title_shopping"
+        tools:layout="@layout/fragment_shopping" />
+
+    <fragment
+        android:id="@+id/navigation_scan"
+        android:name="com.example.homeal_app.ui.Scan.ScanFragment"
+        android:label="@string/title_scan"
+        tools:layout="@layout/fragment_scan" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.example.homeal_app.ui.Settings.SettingsFragment"
+        android:label="@string/title_settings"
+        tools:layout="@layout/fragment_settings" />
+
 </navigation>
