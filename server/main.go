@@ -12,15 +12,17 @@ import (
 const dbPath = "./homeal.db"
 
 func main() {
-	// Landing page server disabled (would need root for port 80)
-	// go func() {
-	// 	mux1 := http.NewServeMux()
-	// 	fs := http.FileServer(http.Dir("./landing-page"))
-	// 	mux1.Handle("/", fs)
-	// 	if err := http.ListenAndServe(":80", mux1); err != nil {
-	// 		fmt.Printf("Server landing-page error: %v\n", err)
-	// 	}
-	// }()
+
+	/*
+	go func() {
+		mux1 := http.NewServeMux()
+		fs := http.FileServer(http.Dir("./landing-page"))
+		mux1.Handle("/", fs)
+		if err := http.ListenAndServe(":80", mux1); err != nil {
+			fmt.Printf("Server landing-page error: %v\n", err)
+		}
+	}()
+		*/
 
 	mux2 := http.NewServeMux()
 

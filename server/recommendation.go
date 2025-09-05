@@ -6,6 +6,11 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
+	"database/sql"
+	"encoding/json"
+	"net/http"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) {

@@ -8,57 +8,58 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// handleIngredients handles the /ingredients endpoint
 func (h *Handler) handleIngredients(w http.ResponseWriter, r *http.Request) {
+	// Parse query parameters
 	search := r.URL.Query().Get("search")
-	limit := r.URL.Query().Get("limit")
-	if limit == "" {
-		limit = "10"
-	} else if _, err := strconv.Atoi(limit); err != nil {
-		http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
-		return
+	limitStr := r.URL.Query().Get("limit")
+
+	// Default limit
+	limit := 10
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
 	}
 
-	// Build query based on whether search term is provided
+	// Build SQL query
 	var query string
 	var args []interface{}
 
 	if search != "" {
-		query = "SELECT id, name FROM Ingredient WHERE LOWER(name) LIKE LOWER(?) ORDER BY name LIMIT ?"
+		query = "SELECT id, name FROM Ingredient WHERE name LIKE ? LIMIT ?"
 		args = []interface{}{"%" + search + "%", limit}
 	} else {
-		query = "SELECT id, name FROM Ingredient ORDER BY name LIMIT ?"
+		query = "SELECT id, name FROM Ingredient LIMIT ?"
 		args = []interface{}{limit}
 	}
 
+	// Execute query
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		http.Error(w, "Database query error", http.StatusInternalServerError)
+		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	var ingredients []Ingredient
+	// Parse results
+	var ingredients []map[string]interface{}
 	for rows.Next() {
-		var ingredient Ingredient
-		if err := rows.Scan(&ingredient.Id, &ingredient.Name); err != nil {
-			http.Error(w, "Row scan error", http.StatusInternalServerError)
-			return
+		var id int
+		var name string
+		if err := rows.Scan(&id, &name); err != nil {
+			continue
 		}
-		ingredients = append(ingredients, ingredient)
+
+		ingredients = append(ingredients, map[string]interface{}{
+			"Id":   id,
+			"Name": name,
+		})
 	}
 
-	if err := rows.Err(); err != nil {
-		http.Error(w, "Row iteration error", http.StatusInternalServerError)
-		return
-	}
-
+	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
-
-	// Use proper JSON encoding to handle special characters
-	if err := json.NewEncoder(w).Encode(ingredients); err != nil {
-		http.Error(w, "JSON encoding error", http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(ingredients)
 }
 
 /*
