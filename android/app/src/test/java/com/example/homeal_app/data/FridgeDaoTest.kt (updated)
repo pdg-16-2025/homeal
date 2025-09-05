@@ -1,0 +1,29 @@
+class FridgeDaoTest {
+    private lateinit var fridgeDao: FridgeDao
+
+    @Before
+    fun setUp() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+        fridgeDao = database.fridgeDao()
+    }
+
+    @Test
+    fun testInsertAndGetFridgeItem() {
+        val item = FridgeItem(id = 1, name = "Apple", quantity = 5)
+        fridgeDao.insert(item)
+
+        val retrievedItem = fridgeDao.getFridgeItemById(1)
+        assertEquals(item, retrievedItem)
+    }
+
+    @Test
+    fun testDeleteFridgeItem() {
+        val item = FridgeItem(id = 2, name = "Banana", quantity = 3)
+        fridgeDao.insert(item)
+        fridgeDao.delete(item)
+
+        val retrievedItem = fridgeDao.getFridgeItemById(2)
+        assertNull(retrievedItem)
+    }
+}

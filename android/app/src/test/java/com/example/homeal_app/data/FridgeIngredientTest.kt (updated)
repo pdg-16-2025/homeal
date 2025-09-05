@@ -1,0 +1,8 @@
+class FridgeIngredientTest {
+    @Test
+    fun testFridgeIngredient() {
+        val ingredient: FridgeIngredient = FridgeIngredient("Carrot", 5)
+        assertEquals("Carrot", ingredient.name)
+        assertEquals(5, ingredient.quantity)
+    }
+}

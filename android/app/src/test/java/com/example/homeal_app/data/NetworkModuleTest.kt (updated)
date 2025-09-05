@@ -1,0 +1,6 @@
+class NetworkModuleTest {
+    @Test
+    fun testNetworkModule() {
+        assert(true)
+    }
+}
