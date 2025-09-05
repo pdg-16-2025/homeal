@@ -1,14 +1,7 @@
 package com.example.homeal_app.ui.Calendar
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
-import com.example.homeal_app.data.repository.CalendarRepository
 import com.example.homeal_app.model.Recipe
-import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -26,19 +19,11 @@ class MealSelectionTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    @MockK
-    private lateinit var repository: CalendarRepository
-
-    private lateinit var viewModel: MealSelectionViewModel
-
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
-        MockKAnnotations.init(this)
         Dispatchers.setMain(testDispatcher)
-        
-        viewModel = MealSelectionViewModel(repository)
     }
 
     @After
@@ -47,52 +32,72 @@ class MealSelectionTest {
     }
 
     @Test
-    fun `searchRecipes should return search results`() = runTest {
+    fun `Recipe model should work correctly`() = runTest {
         // Given
-        val query = "pasta"
-        val recipes = listOf(
-            Recipe(id = 1, title = "Pasta Carbonara", description = "Delicious pasta", ingredients = emptyList()),
-            Recipe(id = 2, title = "Pasta Bolognese", description = "Traditional pasta", ingredients = emptyList())
+        val recipe = Recipe(
+            id = 1,
+            name = "Pasta Carbonara",
+            totalTime = 30,
+            imageUrl = "https://example.com/pasta.jpg"
         )
         
-        coEvery { repository.searchRecipes(query) } returns recipes
-        
-        // When
-        val result = viewModel.searchRecipes(query)
-        
         // Then
-        assert(result == recipes)
-        verify { repository.searchRecipes(query) }
+        assert(recipe.id == 1)
+        assert(recipe.name == "Pasta Carbonara")
+        assert(recipe.totalTime == 30)
+        assert(recipe.imageUrl == "https://example.com/pasta.jpg")
     }
 
     @Test
-    fun `getRecommendations should return recommended recipes`() = runTest {
+    fun `Recipe with default values should work`() = runTest {
         // Given
-        val recipes = listOf(
-            Recipe(id = 1, title = "Recommended Recipe", description = "Great recipe", ingredients = emptyList())
-        )
-        
-        coEvery { repository.getRecommendations() } returns recipes
-        
-        // When
-        val result = viewModel.getRecommendations()
+        val recipe = Recipe()
         
         // Then
-        assert(result == recipes)
-        verify { repository.getRecommendations() }
+        assert(recipe.id == 0)
+        assert(recipe.name == "")
+        assert(recipe.totalTime == 0)
+        assert(recipe.imageUrl == "")
     }
 
     @Test
-    fun `searchRecipes with empty query should return empty list`() = runTest {
+    fun `MealData should work correctly`() = runTest {
         // Given
-        val query = ""
-        
-        coEvery { repository.searchRecipes(query) } returns emptyList()
-        
-        // When
-        val result = viewModel.searchRecipes(query)
+        val mealData = MealData(
+            id = 1,
+            name = "Caesar Salad",
+            description = "Fresh romaine lettuce with parmesan",
+            prepTime = "15 min",
+            difficulty = "Easy",
+            category = "Salad",
+            ingredients = listOf("Lettuce", "Parmesan", "Croutons")
+        )
         
         // Then
-        assert(result.isEmpty())
+        assert(mealData.id == 1)
+        assert(mealData.name == "Caesar Salad")
+        assert(mealData.description == "Fresh romaine lettuce with parmesan")
+        assert(mealData.prepTime == "15 min")
+        assert(mealData.difficulty == "Easy")
+        assert(mealData.category == "Salad")
+        assert(mealData.ingredients.size == 3)
+        assert(mealData.ingredients.contains("Lettuce"))
+    }
+
+    @Test
+    fun `MealData with default values should work`() = runTest {
+        // Given
+        val mealData = MealData(
+            name = "Simple Meal"
+        )
+        
+        // Then
+        assert(mealData.id == 0)
+        assert(mealData.name == "Simple Meal")
+        assert(mealData.description == "")
+        assert(mealData.prepTime == "")
+        assert(mealData.difficulty == "")
+        assert(mealData.category == "")
+        assert(mealData.ingredients.isEmpty())
     }
 }

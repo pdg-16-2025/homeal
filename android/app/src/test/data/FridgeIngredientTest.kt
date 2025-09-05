@@ -1,3 +1,12 @@
+package com.example.homeal_app.data
+
+import com.example.homeal_app.model.FridgeIngredient
+import com.example.homeal_app.model.ShoppingIngredient
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
 class FridgeIngredientTest {
     
     @Test

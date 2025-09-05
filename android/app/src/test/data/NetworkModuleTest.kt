@@ -1,3 +1,9 @@
+package com.example.homeal_app.data
+
+import com.example.homeal_app.data.remote.NetworkModule
+import org.junit.Assert.assertNotNull
+import org.junit.Test
+
 class NetworkModuleTest {
     
     @Test

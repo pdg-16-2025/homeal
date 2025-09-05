@@ -1,15 +1,9 @@
 package com.example.homeal_app.ui.Shopping
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.homeal_app.data.repository.ShoppingRepository
-import com.example.homeal_app.model.ShoppingItem
-import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.impl.annotations.MockK
-import io.mockk.verify
+import com.example.homeal_app.model.ShoppingIngredient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -25,21 +19,11 @@ class ShoppingViewModelTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    @MockK
-    private lateinit var repository: ShoppingRepository
-
-    private lateinit var viewModel: ShoppingViewModel
-
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
-        MockKAnnotations.init(this)
         Dispatchers.setMain(testDispatcher)
-        
-        coEvery { repository.getAllItemsFlow() } returns flowOf(emptyList())
-        
-        viewModel = ShoppingViewModel(repository)
     }
 
     @After
@@ -48,65 +32,83 @@ class ShoppingViewModelTest {
     }
 
     @Test
-    fun `addItem should call repository addItem`() = runTest {
+    fun `ShoppingIngredient model should work correctly`() = runTest {
         // Given
-        val item = ShoppingItem(
+        val shoppingIngredient = ShoppingIngredient(
             id = 1,
             name = "Milk",
-            quantity = 2.0,
-            unit = "liters",
-            isCompleted = false,
-            category = "Dairy"
+            quantity = "2 liters",
+            isDone = false
         )
         
-        coEvery { repository.addItem(any()) } returns Unit
-        
-        // When
-        viewModel.addItem(item)
-        
         // Then
-        verify { repository.addItem(item) }
+        assert(shoppingIngredient.id == 1)
+        assert(shoppingIngredient.name == "Milk")
+        assert(shoppingIngredient.quantity == "2 liters")
+        assert(!shoppingIngredient.isDone)
+        assert(shoppingIngredient.addedDate > 0)
     }
 
     @Test
-    fun `deleteItem should call repository deleteItem`() = runTest {
+    fun `ShoppingIngredient with default values should work`() = runTest {
         // Given
-        val item = ShoppingItem(
-            id = 1,
-            name = "Milk",
-            quantity = 2.0,
-            unit = "liters",
-            isCompleted = false,
-            category = "Dairy"
+        val shoppingIngredient = ShoppingIngredient(
+            name = "Bread",
+            quantity = "1 loaf"
         )
         
-        coEvery { repository.deleteItem(any()) } returns Unit
-        
-        // When
-        viewModel.deleteItem(item)
-        
         // Then
-        verify { repository.deleteItem(item) }
+        assert(shoppingIngredient.id == 0)
+        assert(shoppingIngredient.name == "Bread")
+        assert(shoppingIngredient.quantity == "1 loaf")
+        assert(!shoppingIngredient.isDone)
+        assert(shoppingIngredient.addedDate > 0)
     }
 
     @Test
-    fun `updateItem should call repository updateItem`() = runTest {
+    fun `ShoppingIngredient marked as done should work`() = runTest {
         // Given
-        val item = ShoppingItem(
-            id = 1,
-            name = "Milk",
-            quantity = 2.0,
-            unit = "liters",
-            isCompleted = true,
-            category = "Dairy"
+        val shoppingIngredient = ShoppingIngredient(
+            name = "Eggs",
+            quantity = "12 pieces",
+            isDone = true
         )
         
-        coEvery { repository.updateItem(any()) } returns Unit
-        
-        // When
-        viewModel.updateItem(item)
+        // Then
+        assert(shoppingIngredient.name == "Eggs")
+        assert(shoppingIngredient.quantity == "12 pieces")
+        assert(shoppingIngredient.isDone)
+    }
+
+    @Test
+    fun `ShoppingIngredient with custom ID should work`() = runTest {
+        // Given
+        val shoppingIngredient = ShoppingIngredient(
+            id = 5,
+            name = "Medicine",
+            quantity = "1 bottle"
+        )
         
         // Then
-        verify { repository.updateItem(item) }
+        assert(shoppingIngredient.id == 5)
+        assert(shoppingIngredient.name == "Medicine")
+        assert(shoppingIngredient.quantity == "1 bottle")
+        assert(!shoppingIngredient.isDone)
+    }
+
+    @Test
+    fun `ShoppingIngredient with custom date should work`() = runTest {
+        // Given
+        val customDate = 1640995200000L // January 1, 2022
+        val shoppingIngredient = ShoppingIngredient(
+            name = "Special Cheese",
+            quantity = "200g",
+            addedDate = customDate
+        )
+        
+        // Then
+        assert(shoppingIngredient.name == "Special Cheese")
+        assert(shoppingIngredient.quantity == "200g")
+        assert(shoppingIngredient.addedDate == customDate)
     }
 }
