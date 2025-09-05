@@ -251,7 +251,4 @@ if __name__ == "__main__":
         "meal_type": "lunch"
     }
     
-    # This would need a real database path
-    # recommendations = get_nutriment_recommendations("homeal.db", json.dumps(test_data))
-    # print(json.dumps(recommendations, indent=2))
     print("Nutriment recommendation system ready")

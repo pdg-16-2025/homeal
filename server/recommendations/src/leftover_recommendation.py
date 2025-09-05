@@ -147,7 +147,4 @@ if __name__ == "__main__":
         ]
     }
     
-    # This would need a real database path
-    # recommendations = get_leftover_recommendations("homeal.db", json.dumps(test_data))
-    # print(json.dumps(recommendations, indent=2))
     print("Leftover recommendation system ready")
