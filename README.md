@@ -15,10 +15,18 @@ Android app to plan meals with what's already in your fridge.
 - Android Studio
 - SQLite3
 
-### Running the Backend Server
+### Running the Backend Server locally
 ```bash
 cd server
 go run *.go
+# Server runs on http://localhost:3000
+```
+
+### Running the Backend Server with Docker
+```bash
+cd server
+docker build -t homeal-server .
+docker run -p 3000:3000 -p 80:80 homeal-server
 # Server runs on http://localhost:3000
 ```
 
@@ -35,6 +43,14 @@ app/build/outputs/apk/debug/app-debug.apk
 # Copy to desktop for easy transfer
 cp app/build/outputs/apk/debug/app-debug.apk ~/Desktop/homeal.apk
 ```
+
+> [!WARNING]
+> For the android app connect to your server, you need to change the ip address
+> in [NetworkModule.kt](https://github.com/pdg-16-2025/homeal/blob/main/android/app/src/main/java/com/example/homeal_app/data/remote/NetworkModule.kt)
+> at `private const val BASE_URL = "your-ip-address:3000//"` and in
+> [network_security_config.xml](https://github.com/pdg-16-2025/homeal/blob/main/android/app/src/main/res/xml/network_security_config.xml)
+> add `<domain includeSubdomains="true">your-ip-address</domain>`, else, the app
+> will connect to our public server.
 
 **Actual APK is available on Github**
 
