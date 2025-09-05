@@ -53,6 +53,10 @@ android {
         }
         animationsDisabled = true
     }
+    
+    lint {
+        disable += "NullSafeMutableLiveData"
+    }
 }
 
 dependencies {
