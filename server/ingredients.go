@@ -24,6 +24,9 @@ func (h *Handler) handleIngredients(w http.ResponseWriter, r *http.Request) {
 		}
 		if l > 0 {
 			limit = l
+		} else {
+			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+			return
 		}
 	}
 
