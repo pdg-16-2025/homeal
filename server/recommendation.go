@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -49,13 +50,19 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 		for rows.Next() {
 			var recipe ShortRecipe
 			var images *string
-			err := rows.Scan(&recipe.Id, &recipe.Name, &recipe.TotalTime, &images)
+			var totalTime sql.NullInt64
+			err := rows.Scan(&recipe.Id, &recipe.Name, &totalTime, &images)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Row scan error: %v", err), http.StatusInternalServerError)
 				return
 			}
 			if images != nil {
 				recipe.ImageURL = *images
+			}
+			if totalTime.Valid {
+				recipe.TotalTime = int(totalTime.Int64)
+			} else {
+				recipe.TotalTime = -1
 			}
 			recipes = append(recipes, recipe)
 		}
