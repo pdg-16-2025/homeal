@@ -1,35 +1,66 @@
 package com.example.homeal_app
 
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.After
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 class ExampleUnitTest {
-    
+
+    @Before
+    fun setUp() {
+        // Configuration avant chaque test
+    }
+
+    @After
+    fun tearDown() {
+        // Nettoyage après chaque test
+    }
+
     @Test
-    fun addition_isCorrect() {
+    fun `addition should work correctly`() {
         val result = 2 + 2
-        assertThat(result).isEqualTo(4)
+        assertEquals(4, result)
     }
-    
+
     @Test
-    fun string_concatenation_works() {
-        val firstName = "Homeal"
-        val lastName = "App"
-        val fullName = "$firstName $lastName"
-        assertThat(fullName).isEqualTo("Homeal App")
+    fun `string operations should work`() {
+        val text = "Hello World"
+        assertTrue(text.contains("World"))
+        assertEquals(11, text.length)
     }
-    
+
     @Test
-    fun list_operations_work_correctly() {
-        val numbers = listOf(1, 2, 3, 4, 5)
-        val evenNumbers = numbers.filter { it % 2 == 0 }
+    fun `list operations should work`() {
+        val list = mutableListOf<String>()
+        list.add("test")
+        list.add("android")
         
-        assertThat(evenNumbers).hasSize(2)
-        assertThat(evenNumbers).containsExactly(2, 4)
+        assertEquals(2, list.size)
+        assertTrue(list.contains("test"))
+        assertTrue(list.contains("android"))
+    }
+
+    @Test
+    fun `numbers should be positive`() {
+        val numbers = listOf(1, 2, 3, 4, 5)
+        numbers.forEach { number ->
+            assertTrue("Number $number should be positive", number > 0)
+        }
+    }
+
+    @Test
+    fun `calculator operations should work`() {
+        // Test multiplication
+        val multiplyResult = 3 * 4
+        assertEquals(12, multiplyResult)
+        
+        // Test division
+        val divideResult = 10 / 2
+        assertEquals(5, divideResult)
+        
+        // Test subtraction
+        val subtractResult = 10 - 3
+        assertEquals(7, subtractResult)
     }
 }
