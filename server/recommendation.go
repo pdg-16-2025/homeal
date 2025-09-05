@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/exec"
@@ -41,8 +42,20 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		// Extract only the list of ShortRecipe from the Python response
+		var parsed struct {
+			Recommendations []ShortRecipe `json:"recommendations"`
+		}
+		if err := json.Unmarshal(output, &parsed); err != nil {
+			http.Error(w, fmt.Sprintf("Response parsing error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(output)
+		if err := json.NewEncoder(w).Encode(parsed.Recommendations); err != nil {
+			http.Error(w, fmt.Sprintf("JSON encoding error: %v", err), http.StatusInternalServerError)
+			return
+		}
 
 	case INGREDIENTS:
 		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "ingredients", data, strconv.Itoa(number))
@@ -53,8 +66,20 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		// Extract only the list of ShortRecipe from the Python response
+		var parsed struct {
+			Recommendations []ShortRecipe `json:"recommendations"`
+		}
+		if err := json.Unmarshal(output, &parsed); err != nil {
+			http.Error(w, fmt.Sprintf("Response parsing error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(output)
+		if err := json.NewEncoder(w).Encode(parsed.Recommendations); err != nil {
+			http.Error(w, fmt.Sprintf("JSON encoding error: %v", err), http.StatusInternalServerError)
+			return
+		}
 
 	case NUTRIMENTS:
 		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "nutriments", data, strconv.Itoa(number))
@@ -65,8 +90,20 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		// Extract only the list of ShortRecipe from the Python response
+		var parsed struct {
+			Recommendations []ShortRecipe `json:"recommendations"`
+		}
+		if err := json.Unmarshal(output, &parsed); err != nil {
+			http.Error(w, fmt.Sprintf("Response parsing error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(output)
+		if err := json.NewEncoder(w).Encode(parsed.Recommendations); err != nil {
+			http.Error(w, fmt.Sprintf("JSON encoding error: %v", err), http.StatusInternalServerError)
+			return
+		}
 
 	case PREFERENCES:
 		cmd := exec.Command("python3", "recommendations/src/recommendation_api.py", "preferences", data, strconv.Itoa(number))
@@ -77,8 +114,20 @@ func (h *Handler) handleRecommendations(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		// Extract only the list of ShortRecipe from the Python response
+		var parsed struct {
+			Recommendations []ShortRecipe `json:"recommendations"`
+		}
+		if err := json.Unmarshal(output, &parsed); err != nil {
+			http.Error(w, fmt.Sprintf("Response parsing error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(output)
+		if err := json.NewEncoder(w).Encode(parsed.Recommendations); err != nil {
+			http.Error(w, fmt.Sprintf("JSON encoding error: %v", err), http.StatusInternalServerError)
+			return
+		}
 
 	default:
 		http.Error(w, fmt.Sprintf("Unknown recommendation type: %s", recoType), http.StatusBadRequest)
