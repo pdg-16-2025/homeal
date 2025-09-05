@@ -12,6 +12,7 @@ import (
 const dbPath = "./homeal.db"
 
 func main() {
+
 	/*
 	go func() {
 		mux1 := http.NewServeMux()
