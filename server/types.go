@@ -11,8 +11,8 @@ type Handler struct {
 }
 
 type Ingredient struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
+	Id   int    `json:"Id"`
+	Name string `json:"Name"`
 }
 
 type RecipeIngredient struct {

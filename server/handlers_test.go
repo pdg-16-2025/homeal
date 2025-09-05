@@ -95,8 +95,8 @@ func seedTestData(t *testing.T, db *sql.DB) {
 	}
 
 	products := []struct {
-		code          string
-		ingredientId  int
+		code         string
+		ingredientId int
 	}{
 		{"0007200000021", 1}, // Tomato
 		{"1234567890123", 2}, // Onion
@@ -189,12 +189,12 @@ func seedTestData(t *testing.T, db *sql.DB) {
 		quantity     string
 		unit         string
 	}{
-		{1, 210, 1, "2", "cups"},    // Tomato Pasta - Tomato
-		{2, 210, 3, "3", "cloves"},  // Tomato Pasta - Garlic
-		{3, 210, 5, "2", "tbsp"},    // Tomato Pasta - Olive Oil
-		{4, 139, 3, "4", "cloves"},  // Garlic Bread - Garlic
-		{5, 139, 5, "3", "tbsp"},    // Garlic Bread - Olive Oil
-		{6, 300, 1, "1", "large"},   // Simple Salad - Tomato
+		{1, 210, 1, "2", "cups"},     // Tomato Pasta - Tomato
+		{2, 210, 3, "3", "cloves"},   // Tomato Pasta - Garlic
+		{3, 210, 5, "2", "tbsp"},     // Tomato Pasta - Olive Oil
+		{4, 139, 3, "4", "cloves"},   // Garlic Bread - Garlic
+		{5, 139, 5, "3", "tbsp"},     // Garlic Bread - Olive Oil
+		{6, 300, 1, "1", "large"},    // Simple Salad - Tomato
 		{7, 300, 2, "1/2", "medium"}, // Simple Salad - Onion
 	}
 
@@ -287,24 +287,24 @@ func TestHandleRecipe(t *testing.T) {
 	handler := &Handler{db: db}
 
 	tests := []struct {
-		name           string
-		id             string
-		expectedStatus int
-		expectedName   string
+		name                    string
+		id                      string
+		expectedStatus          int
+		expectedName            string
 		expectedIngredientCount int
 	}{
 		{
-			name:           "Valid recipe ID with ingredients",
-			id:             "210",
-			expectedStatus: http.StatusOK,
-			expectedName:   "Tomato Pasta",
+			name:                    "Valid recipe ID with ingredients",
+			id:                      "210",
+			expectedStatus:          http.StatusOK,
+			expectedName:            "Tomato Pasta",
 			expectedIngredientCount: 3,
 		},
 		{
-			name:           "Valid recipe ID with null values",
-			id:             "300",
-			expectedStatus: http.StatusOK,
-			expectedName:   "Simple Salad",
+			name:                    "Valid recipe ID with null values",
+			id:                      "300",
+			expectedStatus:          http.StatusOK,
+			expectedName:            "Simple Salad",
 			expectedIngredientCount: 2,
 		},
 		{
@@ -790,4 +790,3 @@ func TestHandleRecipeIngredients(t *testing.T) {
 		})
 	}
 }
-
