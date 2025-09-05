@@ -17,7 +17,12 @@ func (h *Handler) handleIngredients(w http.ResponseWriter, r *http.Request) {
 	// Default limit
 	limit := 10
 	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+		l, err := strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, "Invalid limit parameter", http.StatusBadRequest)
+			return
+		}
+		if l > 0 {
 			limit = l
 		}
 	}
